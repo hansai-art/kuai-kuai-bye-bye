@@ -1,0 +1,7 @@
+interface:
+  display_name: "乖乖拜拜"
+  short_description: "拜一包乖乖，跟 Bug 說 Bye-bye，替程式與設計動畫專案安放護身符"
+  default_prompt: "使用 $kuai-kuai-bye-bye 幫我的專案放一包乖乖拜拜，保佑程式乖乖跑、客戶乖乖過稿。"
+
+policy:
+  allow_implicit_invocation: true

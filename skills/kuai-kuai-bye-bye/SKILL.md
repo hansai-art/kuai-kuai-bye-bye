@@ -1,0 +1,51 @@
+---
+name: kuai-kuai-bye-bye
+description: 替工程師、設計師與動畫師安放乖乖拜拜護身符。當使用者說乖乖拜拜、放乖乖、程式護身符、專案祈福、圖層放乖乖、渲染保平安或認真開玩笑時，建立綠色護身資產、插入純註解，或準備 Photoshop／After Effects 保護圖層。這是台灣科技工作文化的幽默專案。
+---
+
+# 乖乖拜拜｜Kuai Kuai Bye Bye
+
+把「拜拜」當成祈福，把「Bye-bye」當成送走 Bug、當機與無止境改稿的願望。這是使用者選定的中英文雙關，不自行換名。
+
+以非常認真的工程態度完成一件非常迷信的事。稱作「安放」「補貨」「保佑」，用台灣繁體中文，少解釋笑點。效力是專案的玩笑設定，不把當機率、結案率、晶片良率或身邊實測寫成經驗證的數據。
+
+## 決定位置
+
+1. 沿用使用者給的專案、檔案或開啟中的文件。沒有路徑時先交付圖檔與可貼的註解，不猜測並修改其他專案。
+2. 程式專案讀取必要的專案規則與檔案開頭，預設只新增 `.kuai-kuai/`。只有使用者指定原始碼，才以純註解插入。
+3. 設計／動畫讀取 [references/design.md](references/design.md)。具備可操作軟體的連線時直接安放並驗證，否則交付 PNG 與腳本，明確說尚未放入原生專案。
+4. 下列 `<skill-dir>` 先解析成此 Skill 的真實目錄。腳本、參考與資產都相對於它。
+
+## 工程師
+
+用 Python 3 標準函式庫腳本，不安裝套件、不新增執行期依賴。
+
+```bash
+python3 "<skill-dir>/scripts/kuai.py" init --project "/path/to/project"
+python3 "<skill-dir>/scripts/kuai.py" bless --project "/path/to/project" --file "src/main.ts"
+python3 "<skill-dir>/scripts/kuai.py" doctor --project "/path/to/project"
+```
+
+`init` 安放透明 PNG、清冊與 Markdown 護身卡。`bless` 只接受明確指定、位於專案內的 UTF-8 檔案，加入純註解並保留 BOM、shebang、Python 編碼宣告與換行格式。JSON 等不能容納註解的格式改用護身卡。重跑不得重複安放。
+
+不要更動程式邏輯、略過失敗測試、吞掉錯誤、刪除 lockfile 或新增自動更新。`doctor` 只檢查資產與註解，不把「乖乖已到位」稱為「程式已穩定」。若修改原始碼，按原專案慣例執行合適的語法／建置檢查。
+
+補貨：重新執行 `init`。30 天是專案設定的儀式週期，到期只提醒，不阻擋開發或 CI。
+
+拆除：`remove --project ... --file ...` 只移除已登記且完整的護身註解，保留後續程式修改。`uninstall --project ...` 移除登記的註解與未修改的護身資產，遇到改動或額外檔案停止並保留。不得因為儀式自行提交、發布或寄訊息。
+
+## 設計師與動畫師
+
+使用 `assets/kuai-kuai-bye-bye.png`，這是原創綠色封袋插畫，透明底，沒有官方 Logo 與吉祥物。
+
+- Photoshop：`scripts/photoshop-kuai.jsx` 匯入 PNG，安放在可用的最底部、隱藏並鎖定。底部是 Background 時放在其上方，不轉換原本背景。
+- After Effects：`scripts/after-effects-kuai.jsx` 在目前合成底部安放，設成 Guide Layer、關閉可見性並鎖定。保留匯入素材，避免未來重開專案遺失來源。
+- Illustrator、Figma、Blender 等其他軟體：只有具備實際連線與該軟體支援的方法才操作，依 design.md 安放。不要宣稱 JSX 通用所有軟體。
+
+圖層命名 `__乖乖拜拜_請勿刪除__`，既有同名圖層不重複新增。最底層仍可能透過透明背景出現在成品，必須另外隱藏／排除輸出。保留原專案，驗證圖層、位置、可見性與輸出排除，不自動儲存覆蓋或開始渲染。
+
+## 回報
+
+首句用簡短儀式回報，例如「乖乖已安放，今天交給綠色處理。」接著說實際位置與驗證結果。沒有執行原生軟體就說「圖檔與腳本已備妥，尚未放入 PSD／AEP」。靜態檢查與 Adobe 實機驗證分開說。
+
+研究背景與公開介紹讀取 [references/research.md](references/research.md)，消息變動時重新查證。不要以全面斷貨當既定事實，也不要暗示勞工應為科技業的迷信繼續生產。
