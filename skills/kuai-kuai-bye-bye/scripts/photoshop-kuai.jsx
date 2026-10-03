@@ -1,5 +1,5 @@
 #target photoshop
-/* Add one hidden, locked original talisman; never save or overwrite the PSD. */
+/* Add one user-selected, hidden, locked talisman; never save or overwrite the PSD. */
 (function () {
     var NAME = "__乖乖拜拜_請勿刪除__";
     if (!app.documents.length) { alert("先開啟要保佑的 Photoshop 文件。"); return; }
@@ -12,8 +12,7 @@
         return false;
     }
     if (find(target.layers)) { alert("乖乖已在原位，請檢查是否隱藏並鎖定。"); return; }
-    var file = new File(new File($.fileName).parent.parent.fsName + "/assets/kuai-kuai-bye-bye.png");
-    if (!file.exists) file = File.openDialog("選擇 kuai-kuai-bye-bye.png");
+    var file = File.openDialog("選擇已獲授權的乖乖圖檔（PNG、JPG、JPEG 或 WebP）", "*.png;*.jpg;*.jpeg;*.webp");
     if (!file || !file.exists) return;
     var originalLayer = target.activeLayer;
     var source = null;

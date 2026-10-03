@@ -6,7 +6,9 @@
 
 把台灣工程師放在機器旁邊的那包綠色信仰，放進程式碼、設計圖層與動畫合成。保佑程式乖乖跑、客戶乖乖過稿，跟 Bug、當機和第十八版修改說拜拜。
 
-![乖乖拜拜護身符](skills/kuai-kuai-bye-bye/assets/kuai-kuai-bye-bye.png)
+![乖乖官方綠色包裝](skills/kuai-kuai-bye-bye/assets/kuai-kuai-official-green.webp)
+
+圖片來源：乖乖官方網站的[乖乖玉米脆條－奶油椰子商品頁](https://www.kuai.com.tw/web/product/product_in.jsp?lang=tw&pd_id=PD1703181127376)。本專案使用官方公開商品圖；若你的授權範圍不同，請用自己的授權檔案替換。
 
 乖乖可能缺貨，Deadline 不會。
 
@@ -16,11 +18,11 @@
 
 ## 它到底是什麼？
 
-這是一個 AI Skill，加上透明 PNG 與小型腳本。把 Skill 交給支援本機技能與執行工具的 AI，它就知道怎麼在你的專案裡安放乖乖。只有對話、沒有檔案或桌面軟體操作權限時，它可以提供圖檔與腳本，不能隔空修改 PSD。
+這是一個 AI Skill，加上官方綠色包裝圖檔與小型腳本。把 Skill 交給支援本機技能與執行工具的 AI，它就知道怎麼在你的專案裡安放乖乖。只有對話、沒有檔案或桌面軟體操作權限時，它可以提供圖檔與腳本，不能隔空修改 PSD。
 
 | 身分 | 乖乖放哪裡 | 真的做了什麼 |
 | --- | --- | --- |
-| 工程師 | `.kuai-kuai/` 與指定的原始碼 | 新增護身卡、PNG、清冊與純註解，不新增執行期依賴 |
+| 工程師 | `.kuai-kuai/` 與指定的原始碼 | 新增護身卡、官方圖檔、清冊與純註解，不新增執行期依賴 |
 | 設計師 | Photoshop 可用的最底部 | 匯入 PNG，隱藏、鎖定，保留 Background |
 | 動畫師 | After Effects 合成最底部 | 匯入 PNG，設 Guide Layer、關閉可見性、鎖定 |
 
@@ -59,6 +61,9 @@
 # 安放一包：新增專用資料夾，不改原始碼
 python3 skills/kuai-kuai-bye-bye/scripts/kuai.py init --project /path/to/project
 
+# 若有自己已取得授權的圖檔，指定它（可省略，預設使用專案附的官方公開商品圖）
+python3 skills/kuai-kuai-bye-bye/scripts/kuai.py init --project /path/to/project --image /path/to/official-kuai-kuai.webp
+
 # 明確指定要保佑的檔案
 python3 skills/kuai-kuai-bye-bye/scripts/kuai.py bless --project /path/to/project --file src/main.ts
 
@@ -96,7 +101,7 @@ python3 skills/kuai-kuai-bye-bye/scripts/kuai.py uninstall --project /path/to/pr
 3. 檢查 `__乖乖拜拜_請勿刪除__` 圖層，確認位於可用的最底部、眼睛關閉、已鎖定。
 4. 檢視後另存工作副本。腳本不自動儲存。
 
-有 Background 的文件，乖乖放在它上方，不轉換原本背景。沒有腳本也可以直接置入 `assets/kuai-kuai-bye-bye.png`，移到最底下、隱藏、鎖定。
+有 Background 的文件，乖乖放在它上方，不轉換原本背景。沒有腳本也可以直接置入 `assets/kuai-kuai-official-green.webp`，移到最底下、隱藏、鎖定；若使用自己的授權素材，直接置入自己的圖檔。
 
 **只放最下面還不夠，透明背景會讓它出現在成品。隱藏這一步要做。**
 
@@ -105,7 +110,7 @@ python3 skills/kuai-kuai-bye-bye/scripts/kuai.py uninstall --project /path/to/pr
 1. 開啟目標合成。
 2. 選「File → Scripts → Run Script File」，執行 `skills/kuai-kuai-bye-bye/scripts/after-effects-kuai.jsx`。
 3. 檢查乖乖在最底部、Guide Layer 已開、Video switch 已關、圖層已鎖。
-4. 保留 PNG 素材來源。移動資料夾時重新連結，或使用 Collect Files 打包。
+4. 保留圖檔素材來源。移動資料夾時重新連結，或使用 Collect Files 打包。
 
 Render Settings 的 Guide Layers 使用 All Off。腳本不開始渲染、不修改既有 Render Queue，也不自動存檔。
 
@@ -146,8 +151,12 @@ Adobe JSX 已做 JavaScript 語法檢查，尚未在 Photoshop／After Effects �
 
 ## 授權與素材
 
-MIT 授權。PNG 為本專案以 AI 生成的原創「乖乖拜拜」護身包裝，沒有複製官方包裝、Logo 或吉祥物。這是獨立幽默專案，與乖乖公司沒有官方合作或聯名關係。MIT 涵蓋本專案提供的程式、文件與素材，不授予第三方商標權。
+MIT 授權適用於本專案提供的程式與文件。官方乖乖包裝圖檔不是本專案創作，也不因放入此倉庫而改變原有著作權、商標權或授權條件；使用者應依自己的授權範圍使用。商品圖來源：[乖乖官方網站](https://www.kuai.com.tw/web/product/product_in.jsp?lang=tw&pd_id=PD1703181127376)。
 
-圖檔製作設定（內建影像生成工具，保留綠色袋身與透明底，改版更新名稱）：透明背景、綠色密封袋、繁中「乖乖拜拜」「護身符」、KUAI KUAI • BYE BYE、原創微笑晶片符號。使用內建影像生成工具製作。
+## 使用動畫
+
+下面的 GIF 示範設計師如何把官方綠色乖乖拖進圖層面板最底部，再隱藏與鎖定。這是介面概念示範，不會修改你的 PSD；實際操作請執行 Photoshop 腳本。
+
+![把官方綠色乖乖拖進最底層](docs/demo-drag-kuai-kuai.gif)
 
 作者：Hans 林思翰

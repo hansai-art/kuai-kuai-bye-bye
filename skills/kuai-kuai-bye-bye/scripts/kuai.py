@@ -15,6 +15,8 @@ MARK = "DIGITAL-KUAI-KUAI"
 SHRINE = ".kuai-kuai"
 HASH = {".py", ".sh", ".bash", ".rb", ".yaml", ".yml", ".toml"}
 BLOCK = {".js", ".mjs", ".cjs", ".ts", ".jsx", ".tsx", ".c", ".cpp", ".h", ".hpp", ".css", ".go", ".rs", ".java", ".cs", ".swift", ".kt"}
+IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
+DEFAULT_IMAGE = "kuai-kuai-official-green.webp"
 
 def digest(raw):
     return hashlib.sha256(raw).hexdigest()
@@ -43,6 +45,14 @@ def source_path(root, value):
         raise ValueError("指定路徑不是檔案。")
     return path
 
+def image_path(value):
+    path = Path(value).expanduser().resolve(strict=True)
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("護身圖檔必須是實際存在的檔案，不能是符號連結。")
+    if path.suffix.lower() not in IMAGE_SUFFIXES:
+        raise ValueError("護身圖檔只接受 PNG、JPG、JPEG 或 WebP。")
+    return path
+
 def load(root):
     path = root / SHRINE / "manifest.json"
     if path.is_symlink():
@@ -50,7 +60,9 @@ def load(root):
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("project") != MARK or data.get("version") != 1:
         raise ValueError("不是本工具建立的護身清冊。")
-    if set(data["assets"]) != {"digital-kuai-kuai.png", "talisman.md"}:
+    assets = set(data["assets"])
+    images = assets - {"talisman.md"}
+    if "talisman.md" not in assets or len(images) != 1 or Path(next(iter(images))).suffix.lower() not in IMAGE_SUFFIXES:
         raise ValueError("護身資產清單異常。")
     return data
 
@@ -60,22 +72,26 @@ def save(root, data):
         raise ValueError("清冊不能是符號連結。")
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-def initialize(root):
+def initialize(root, image=None):
     folder = root / SHRINE
     if folder.exists():
+        if image:
+            raise ValueError("護身資料夾已存在；要改用另一張圖，請先檢查並移除既有儀式後再 init。")
         data = load(root)
         for name, expected in data["assets"].items():
             path = folder / name
             if path.is_symlink() or not path.is_file() or digest(path.read_bytes()) != expected:
                 raise ValueError("資產已改動或遺失，先處理後再補貨：" + name)
     else:
-        png = (SKILL / "assets" / "kuai-kuai-bye-bye.png").read_bytes()
+        selected = image_path(image) if image else (SKILL / "assets" / DEFAULT_IMAGE)
+        payload = selected.read_bytes()
         card = "# 乖乖拜拜護身卡\n\n程式乖乖跑，客戶乖乖過稿。\n\n綠色、密封、請勿刪除。效力屬於專案玩笑設定。\n安放狀態見 manifest.json，補貨不會中斷 CI。\n".encode("utf-8")
         folder.mkdir()
         data = {"project": MARK, "version": 1, "assets": {}, "files": {}}
-        for name, payload in {"digital-kuai-kuai.png": png, "talisman.md": card}.items():
-            (folder / name).write_bytes(payload)
-            data["assets"][name] = digest(payload)
+        image_name = DEFAULT_IMAGE if not image else "kuai-kuai-image" + selected.suffix.lower()
+        for name, content in {image_name: payload, "talisman.md": card}.items():
+            (folder / name).write_bytes(content)
+            data["assets"][name] = digest(content)
     data["blessed_on"] = date.today().isoformat()
     data["restock_on"] = (date.today() + timedelta(days=30)).isoformat()
     save(root, data)
@@ -200,12 +216,13 @@ def main():
     parser.add_argument("command", choices=["init", "bless", "doctor", "remove", "uninstall"])
     parser.add_argument("--project", required=True)
     parser.add_argument("--file")
+    parser.add_argument("--image", help="init 時使用已獲授權的 PNG、JPG、JPEG 或 WebP 圖檔")
     args = parser.parse_args()
     if args.command in {"bless", "remove"} and not args.file:
         parser.error("bless／remove 需要 --file")
     try:
         root = project_path(args.project)
-        if args.command == "init": initialize(root)
+        if args.command == "init": initialize(root, args.image)
         elif args.command == "bless": bless(root, args.file)
         elif args.command == "doctor": return doctor(root)
         elif args.command == "remove": remove_one(root, load(root), args.file)

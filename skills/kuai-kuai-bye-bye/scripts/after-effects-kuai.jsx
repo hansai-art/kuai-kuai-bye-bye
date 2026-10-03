@@ -1,5 +1,5 @@
 #target aftereffects
-/* Add a disabled guide layer; preserve footage and never auto-save/render. */
+/* Add a user-selected disabled guide layer; preserve footage and never auto-save/render. */
 (function () {
     var NAME = "__乖乖拜拜_請勿刪除__";
     if (!app.project || !(app.project.activeItem instanceof CompItem)) {
@@ -11,8 +11,7 @@
             alert("乖乖已在原位，請檢查 Guide Layer、可見性與鎖定。"); return;
         }
     }
-    var file = new File(new File($.fileName).parent.parent.fsName + "/assets/kuai-kuai-bye-bye.png");
-    if (!file.exists) file = File.openDialog("選擇 kuai-kuai-bye-bye.png");
+    var file = File.openDialog("選擇已獲授權的乖乖圖檔（PNG、JPG、JPEG 或 WebP）", "*.png;*.jpg;*.jpeg;*.webp");
     if (!file || !file.exists) return;
     app.beginUndoGroup("安放數位乖乖");
     try {

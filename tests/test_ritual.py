@@ -128,5 +128,17 @@ class RitualTest(unittest.TestCase):
         kuai.uninstall(self.root)
         self.assertFalse((self.root / ".kuai-kuai").exists())
 
+    def test_custom_authorized_image_is_copied_and_recorded(self):
+        other = self.root / "authorized-green.webp"
+        other.write_bytes(b"RIFF-authorized-image")
+        target = self.root / "custom-project"
+        target.mkdir()
+        kuai.initialize(target, str(other))
+        data = kuai.load(target)
+        self.assertIn("kuai-kuai-image.webp", data["assets"])
+        self.assertEqual((target / ".kuai-kuai/kuai-kuai-image.webp").read_bytes(), other.read_bytes())
+        with self.assertRaises(ValueError):
+            kuai.initialize(target, str(other))
+
 if __name__ == "__main__":
     unittest.main()

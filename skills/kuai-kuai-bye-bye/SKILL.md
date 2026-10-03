@@ -26,7 +26,7 @@ python3 "<skill-dir>/scripts/kuai.py" bless --project "/path/to/project" --file 
 python3 "<skill-dir>/scripts/kuai.py" doctor --project "/path/to/project"
 ```
 
-`init` 安放透明 PNG、清冊與 Markdown 護身卡。`bless` 只接受明確指定、位於專案內的 UTF-8 檔案，加入純註解並保留 BOM、shebang、Python 編碼宣告與換行格式。JSON 等不能容納註解的格式改用護身卡。重跑不得重複安放。
+`init` 安放護身圖檔、清冊與 Markdown 護身卡。內建圖檔是乖乖官方網站公開的綠色奶油椰子包裝；使用者若有另一份已獲授權的圖檔，可用 `init --image "/path/to/official-kuai-kuai.png"` 指定 PNG、JPG、JPEG 或 WebP，腳本會複製圖檔並記錄雜湊。`bless` 只接受明確指定、位於專案內的 UTF-8 檔案，加入純註解並保留 BOM、shebang、Python 編碼宣告與換行格式。JSON 等不能容納註解的格式改用護身卡。重跑不得重複安放。
 
 不要更動程式邏輯、略過失敗測試、吞掉錯誤、刪除 lockfile 或新增自動更新。`doctor` 只檢查資產與註解，不把「乖乖已到位」稱為「程式已穩定」。若修改原始碼，按原專案慣例執行合適的語法／建置檢查。
 
@@ -36,10 +36,10 @@ python3 "<skill-dir>/scripts/kuai.py" doctor --project "/path/to/project"
 
 ## 設計師與動畫師
 
-使用 `assets/kuai-kuai-bye-bye.png`，這是原創綠色封袋插畫，透明底，沒有官方 Logo 與吉祥物。
+預設圖檔為 `assets/kuai-kuai-official-green.webp`，取自乖乖官方網站的「乖乖玉米脆條－奶油椰子」商品頁。使用者若有自己的授權素材，優先用 `init --image` 或 Adobe 腳本選檔，不要把其他網路圖片冒充官方授權素材。
 
-- Photoshop：`scripts/photoshop-kuai.jsx` 匯入 PNG，安放在可用的最底部、隱藏並鎖定。底部是 Background 時放在其上方，不轉換原本背景。
-- After Effects：`scripts/after-effects-kuai.jsx` 在目前合成底部安放，設成 Guide Layer、關閉可見性並鎖定。保留匯入素材，避免未來重開專案遺失來源。
+- Photoshop：`scripts/photoshop-kuai.jsx` 先讓使用者選擇已獲授權的 PNG、JPG、JPEG 或 WebP，安放在可用的最底部、隱藏並鎖定。底部是 Background 時放在其上方，不轉換原本背景。
+- After Effects：`scripts/after-effects-kuai.jsx` 先讓使用者選擇已獲授權的圖檔，在目前合成底部安放，設成 Guide Layer、關閉可見性並鎖定。保留匯入素材，避免未來重開專案遺失來源。
 - Illustrator、Figma、Blender 等其他軟體：只有具備實際連線與該軟體支援的方法才操作，依 design.md 安放。不要宣稱 JSX 通用所有軟體。
 
 圖層命名 `__乖乖拜拜_請勿刪除__`，既有同名圖層不重複新增。最底層仍可能透過透明背景出現在成品，必須另外隱藏／排除輸出。保留原專案，驗證圖層、位置、可見性與輸出排除，不自動儲存覆蓋或開始渲染。
@@ -48,4 +48,4 @@ python3 "<skill-dir>/scripts/kuai.py" doctor --project "/path/to/project"
 
 首句用簡短儀式回報，例如「乖乖已安放，今天交給綠色處理。」接著說實際位置與驗證結果。沒有執行原生軟體就說「圖檔與腳本已備妥，尚未放入 PSD／AEP」。靜態檢查與 Adobe 實機驗證分開說。
 
-研究背景與公開介紹讀取 [references/research.md](references/research.md)，消息變動時重新查證。不要以全面斷貨當既定事實，也不要暗示勞工應為科技業的迷信繼續生產。
+研究背景與公開介紹讀取 [references/research.md](references/research.md)，消息變動時重新查證。不要以全面斷貨當既定事實，也不要暗示勞工應為科技業的迷信繼續生產。官方預設圖來源記在 README，若授權範圍不同，改用使用者提供的圖檔。
