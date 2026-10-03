@@ -2,13 +2,11 @@
 
 ### 拜一包乖乖，跟 Bug 說 Bye-bye。
 
+![把官方綠色乖乖拖進最底層、隱藏並鎖定](docs/demo-drag-kuai-kuai.gif)
+
 「拜拜」是祈福，「Bye-bye」是送走。
 
 把台灣工程師放在機器旁邊的那包綠色信仰，放進程式碼、設計圖層與動畫合成。保佑程式乖乖跑、客戶乖乖過稿，跟 Bug、當機和第十八版修改說拜拜。
-
-![乖乖官方綠色包裝](skills/kuai-kuai-bye-bye/assets/kuai-kuai-official-green.webp)
-
-圖片來源：乖乖官方網站的[乖乖玉米脆條－奶油椰子商品頁](https://www.kuai.com.tw/web/product/product_in.jsp?lang=tw&pd_id=PD1703181127376)。本專案使用官方公開商品圖；若你的授權範圍不同，請用自己的授權檔案替換。
 
 乖乖可能缺貨，Deadline 不會。
 
@@ -152,11 +150,5 @@ Adobe JSX 已做 JavaScript 語法檢查，尚未在 Photoshop／After Effects �
 ## 授權與素材
 
 MIT 授權適用於本專案提供的程式與文件。官方乖乖包裝圖檔不是本專案創作，也不因放入此倉庫而改變原有著作權、商標權或授權條件；使用者應依自己的授權範圍使用。商品圖來源：[乖乖官方網站](https://www.kuai.com.tw/web/product/product_in.jsp?lang=tw&pd_id=PD1703181127376)。
-
-## 使用動畫
-
-下面的 GIF 示範設計師如何把官方綠色乖乖拖進圖層面板最底部，再隱藏與鎖定。這是介面概念示範，不會修改你的 PSD；實際操作請執行 Photoshop 腳本。
-
-![把官方綠色乖乖拖進最底層](docs/demo-drag-kuai-kuai.gif)
 
 作者：Hans 林思翰
