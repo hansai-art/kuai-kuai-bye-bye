@@ -18,7 +18,7 @@ description: 替工程師、設計師與動畫師安放乖乖拜拜護身符。�
 
 ## 工程師
 
-用 Python 3 標準函式庫腳本，不安裝套件、不新增執行期依賴。
+用 Python 3 標準函式庫腳本，不安裝套件、不新增執行期依賴。若使用首頁示範的程式碼繪圖模式，改用 `scripts/code-kuai-kuai.py`，它以顏色矩陣輸出 SVG，不讀取或嵌入乖乖圖片。
 
 ```bash
 python3 "<skill-dir>/scripts/kuai.py" init --project "/path/to/project"
@@ -27,6 +27,8 @@ python3 "<skill-dir>/scripts/kuai.py" doctor --project "/path/to/project"
 ```
 
 `init` 安放護身圖檔、清冊與 Markdown 護身卡。內建圖檔是乖乖官方網站公開的綠色奶油椰子包裝；使用者若有另一份已獲授權的圖檔，可用 `init --image "/path/to/official-kuai-kuai.png"` 指定 PNG、JPG、JPEG 或 WebP，腳本會複製圖檔並記錄雜湊。`bless` 只接受明確指定、位於專案內的 UTF-8 檔案，加入純註解並保留 BOM、shebang、Python 編碼宣告與換行格式。JSON 等不能容納註解的格式改用護身卡。重跑不得重複安放。
+
+程式碼繪圖模式：`python3 "<skill-dir>/scripts/code-kuai-kuai.py" --output "/path/to/project/.kuai-kuai/kuai-kuai-code.svg"`。這會把 `PIXELS` 矩陣逐格轉成 SVG 矩形，適合放在程式專案或文件裡，不會把官方商品圖混進原始碼。
 
 不要更動程式邏輯、略過失敗測試、吞掉錯誤、刪除 lockfile 或新增自動更新。`doctor` 只檢查資產與註解，不把「乖乖已到位」稱為「程式已穩定」。若修改原始碼，按原專案慣例執行合適的語法／建置檢查。
 

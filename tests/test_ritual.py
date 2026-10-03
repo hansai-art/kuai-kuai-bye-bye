@@ -13,6 +13,10 @@ SCRIPT = Path(__file__).resolve().parents[1] / "skills/kuai-kuai-bye-bye/scripts
 spec = importlib.util.spec_from_file_location("kuai", SCRIPT)
 kuai = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(kuai)
+CODE_SCRIPT = Path(__file__).resolve().parents[1] / "skills/kuai-kuai-bye-bye/scripts/code-kuai-kuai.py"
+code_spec = importlib.util.spec_from_file_location("code_kuai_kuai", CODE_SCRIPT)
+code_kuai_kuai = importlib.util.module_from_spec(code_spec)
+code_spec.loader.exec_module(code_kuai_kuai)
 
 class RitualTest(unittest.TestCase):
     def setUp(self):
@@ -139,6 +143,22 @@ class RitualTest(unittest.TestCase):
         self.assertEqual((target / ".kuai-kuai/kuai-kuai-image.webp").read_bytes(), other.read_bytes())
         with self.assertRaises(ValueError):
             kuai.initialize(target, str(other))
+
+    def test_code_drawn_talisman_is_matrix_based_svg(self):
+        svg = code_kuai_kuai.build_svg(scale=4)
+        self.assertIn('role="img"', svg)
+        self.assertIn('>KK</text>', svg)
+        self.assertGreater(svg.count("<rect "), 100)
+        self.assertNotIn("data:image", svg)
+        with self.assertRaises(ValueError):
+            code_kuai_kuai.build_svg(scale=1)
+
+    def test_code_drawn_talisman_can_be_written_without_pillow(self):
+        target = self.root / ".kuai-kuai/kuai-kuai-code.svg"
+        target.parent.mkdir(exist_ok=True)
+        target.write_text(code_kuai_kuai.build_svg(scale=3), encoding="utf-8")
+        self.assertTrue(target.exists())
+        self.assertIn("GREEN LUCK", target.read_text(encoding="utf-8"))
 
 if __name__ == "__main__":
     unittest.main()

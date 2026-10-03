@@ -6,7 +6,7 @@
 
 ![Illustrator 操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.png)
 
-![程式碼：把乖乖護身註解插入原始碼](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.gif)
+![程式碼：用像素矩陣直接畫出乖乖，不載入圖片](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.gif)
 
 ![程式碼操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.png)
 
@@ -26,7 +26,7 @@
 
 | 身分 | 乖乖放哪裡 | 真的做了什麼 |
 | --- | --- | --- |
-| 工程師 | `.kuai-kuai/` 與指定的原始碼 | 新增護身卡、官方圖檔、清冊與純註解，不新增執行期依賴 |
+| 工程師 | `.kuai-kuai/` 與指定的原始碼 | 可選擇新增護身卡、官方圖檔、清冊、純註解，或用程式碼直接畫出像素版乖乖 |
 | 設計師 | Illustrator 圖層最底部 | 拖入官方圖檔，隱藏、鎖定，保留 Background |
 | 動畫師 | After Effects 合成最底部 | 匯入 PNG，設 Guide Layer、關閉可見性、鎖定 |
 
@@ -74,6 +74,10 @@ python3 skills/kuai-kuai-bye-bye/scripts/kuai.py bless --project /path/to/projec
 # 檢查乖乖在不在、圖檔有沒有改動
 python3 skills/kuai-kuai-bye-bye/scripts/kuai.py doctor --project /path/to/project
 
+# 不放圖片，直接用像素矩陣產生 SVG 版乖乖
+python3 skills/kuai-kuai-bye-bye/scripts/code-kuai-kuai.py \
+  --output /path/to/project/.kuai-kuai/kuai-kuai-code.svg
+
 # 拆除單一檔案的護身註解
 python3 skills/kuai-kuai-bye-bye/scripts/kuai.py remove --project /path/to/project --file src/main.ts
 
@@ -97,6 +101,23 @@ python3 skills/kuai-kuai-bye-bye/scripts/kuai.py uninstall --project /path/to/pr
 重跑不多放一包。30 天補貨一次，重新 `init` 更新儀式日期。到期只提醒，絕不讓 CI 因為乖乖過期失敗。`doctor` 檢查的是護身資產，不是你的程式測試。
 
 拆除只拿掉完整的標記註解，後來修改的程式碼保留。註解本身已改動、護身資料夾有其他檔案或資產被改過，就停止並保留資料。
+
+## 工程師：直接用程式碼畫出乖乖
+
+首頁第二張 GIF 示範的不是把 PNG 塞進程式碼，而是把一張小型像素矩陣寫進程式。每一個字元代表一個顏色，腳本逐格輸出 SVG 的矩形，再補上標籤。這種做法不需要乖乖圖片、不新增執行期依賴，也可以放進 README、終端工具或測試儀式裡。
+
+```python
+for row, line in enumerate(PIXELS):
+    for col, pixel in enumerate(line):
+        if pixel in PALETTE:
+            canvas.rectangle(
+                x + col * scale,
+                y + row * scale,
+                fill=PALETTE[pixel],
+            )
+```
+
+`code-kuai-kuai.py` 會輸出由矩形組成的 SVG。它是程式碼繪出的像素版護身符，不冒充官方包裝圖，也不會把二進位圖片偷偷放進原始碼。若要在設計軟體中保留官方包裝外觀，才使用 `assets/kuai-kuai-official-green.webp`。
 
 ## 設計師：Illustrator
 
@@ -153,7 +174,7 @@ Illustrator、Figma、Blender 的手動安放建議在 [設計工作流程](skil
 
 ## 驗證與限制
 
-執行 `python3 -m unittest discover -s tests -v`，檢查安放與拆除是否保留 BOM、CRLF、shebang、Python 編碼宣告、Markdown frontmatter、HTML doctype 與後續原始碼改動，也檢查重跑、JSON 拒絕、symlink 拒絕與修改過的資產保留。
+執行 `python3 -m unittest discover -s tests -v`，檢查安放與拆除是否保留 BOM、CRLF、shebang、Python 編碼宣告、Markdown frontmatter、HTML doctype 與後續原始碼改動，也檢查重跑、JSON 拒絕、symlink 拒絕、修改過的資產保留，以及程式碼繪圖 SVG 是否真的由像素矩陣產生。
 
 Adobe JSX 已做 JavaScript 語法檢查，尚未在 Photoshop／After Effects 桌面軟體實機驗證。第一版請先在專案副本測試，檢查輸出沒有乖乖，再儲存自己的工作檔。
 
