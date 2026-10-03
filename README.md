@@ -2,7 +2,9 @@
 
 ### 拜一包乖乖，跟 Bug 說 Bye-bye。
 
-![把官方綠色乖乖拖進最底層、隱藏並鎖定](docs/demo-drag-kuai-kuai.gif)
+![把官方綠色乖乖拖進最底層、隱藏並鎖定](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-drag-kuai-kuai.gif)
+
+![操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-drag-kuai-kuai.png)
 
 「拜拜」是祈福，「Bye-bye」是送走。
 
