@@ -144,21 +144,21 @@ class RitualTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             kuai.initialize(target, str(other))
 
-    def test_code_drawn_talisman_is_matrix_based_svg(self):
-        svg = code_kuai_kuai.build_svg(scale=4)
-        self.assertIn('role="img"', svg)
-        self.assertIn('>KK</text>', svg)
-        self.assertGreater(svg.count("<rect "), 100)
-        self.assertNotIn("data:image", svg)
-        with self.assertRaises(ValueError):
-            code_kuai_kuai.build_svg(scale=1)
+    def test_code_hook_is_opt_in_and_keeps_art_in_source(self):
+        self.assertFalse(code_kuai_kuai.should_bless("build"))
+        self.assertEqual(code_kuai_kuai.bless("build"), "")
+        output = code_kuai_kuai.bless("build", on_build=True, color=False)
+        self.assertIn("[kuai-kuai] build", output)
+        self.assertIn("████", output)
+        self.assertNotIn("\\033", output)
+        self.assertIn("ASCII_ART", code_kuai_kuai.__dict__)
 
-    def test_code_drawn_talisman_can_be_written_without_pillow(self):
-        target = self.root / ".kuai-kuai/kuai-kuai-code.svg"
-        target.parent.mkdir(exist_ok=True)
-        target.write_text(code_kuai_kuai.build_svg(scale=3), encoding="utf-8")
-        self.assertTrue(target.exists())
-        self.assertIn("GREEN LUCK", target.read_text(encoding="utf-8"))
+    def test_dev_hook_and_ansi_colour(self):
+        self.assertEqual(code_kuai_kuai.bless("dev"), "")
+        output = code_kuai_kuai.bless("dev", on_dev=True)
+        self.assertIn(code_kuai_kuai.GREEN, output)
+        self.assertIn(code_kuai_kuai.RESET, output)
+        self.assertIn("[kuai-kuai] dev", output)
 
 if __name__ == "__main__":
     unittest.main()
