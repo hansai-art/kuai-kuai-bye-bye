@@ -2,9 +2,13 @@
 
 ### 拜一包乖乖，跟 Bug 說 Bye-bye。
 
-![把官方綠色乖乖拖進最底層、隱藏並鎖定](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-drag-kuai-kuai.gif)
+![Illustrator：把官方綠色乖乖拖進最底層](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.gif)
 
-![操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-drag-kuai-kuai.png)
+![Illustrator 操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.png)
+
+![程式碼：把乖乖護身註解插入原始碼](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.gif)
+
+![程式碼操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.png)
 
 「拜拜」是祈福，「Bye-bye」是送走。
 
@@ -23,7 +27,7 @@
 | 身分 | 乖乖放哪裡 | 真的做了什麼 |
 | --- | --- | --- |
 | 工程師 | `.kuai-kuai/` 與指定的原始碼 | 新增護身卡、官方圖檔、清冊與純註解，不新增執行期依賴 |
-| 設計師 | Photoshop 可用的最底部 | 匯入 PNG，隱藏、鎖定，保留 Background |
+| 設計師 | Illustrator 圖層最底部 | 拖入官方圖檔，隱藏、鎖定，保留 Background |
 | 動畫師 | After Effects 合成最底部 | 匯入 PNG，設 Guide Layer、關閉可見性、鎖定 |
 
 結案率提升、當機率下降、客戶突然只改一版，屬於本專案的信仰設定。程式沒有修復軟體或提高成交率的功能，也沒有蒐集這些成效數據。
@@ -93,6 +97,10 @@ python3 skills/kuai-kuai-bye-bye/scripts/kuai.py uninstall --project /path/to/pr
 重跑不多放一包。30 天補貨一次，重新 `init` 更新儀式日期。到期只提醒，絕不讓 CI 因為乖乖過期失敗。`doctor` 檢查的是護身資產，不是你的程式測試。
 
 拆除只拿掉完整的標記註解，後來修改的程式碼保留。註解本身已改動、護身資料夾有其他檔案或資產被改過，就停止並保留資料。
+
+## 設計師：Illustrator
+
+首頁第一張 GIF 就是這個流程：把已授權的官方綠色乖乖置入 Illustrator，拖到 Layers 最底部，關閉可見性並鎖定。手動操作時請使用 `assets/kuai-kuai-official-green.webp`，或用你自己的授權圖檔；不要把護身圖層納入輸出。
 
 ## 設計師：Photoshop
 
