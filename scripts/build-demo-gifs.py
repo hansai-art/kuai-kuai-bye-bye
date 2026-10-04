@@ -55,18 +55,40 @@ def lerp(start: int, end: int, amount: float) -> int:
     return int(round(start + (end - start) * amount))
 
 
-def draw_mouse(draw: ImageDraw.ImageDraw, x: int, y: int, pressed: bool = False) -> None:
-    """Draw an actual pointer, not a decorative direction arrow."""
-    pointer = [(x, y), (x + 4, y + 30), (x + 12, y + 22),
-               (x + 22, y + 39), (x + 28, y + 35), (x + 18, y + 19),
-               (x + 30, y + 16)]
+def ease_out_quart(amount: float) -> float:
+    amount = max(0.0, min(1.0, amount))
+    return 1.0 - (1.0 - amount) ** 4
+
+
+def smoothstep(amount: float) -> float:
+    amount = max(0.0, min(1.0, amount))
+    return amount * amount * (3.0 - 2.0 * amount)
+
+
+def draw_mouse(
+    draw: ImageDraw.ImageDraw,
+    x: int,
+    y: int,
+    pressed: bool = False,
+    click_strength: float = 1.0,
+) -> None:
+    """Draw a small desktop pointer with restrained press feedback."""
+    pointer = [(x, y), (x + 3, y + 27), (x + 11, y + 20),
+               (x + 22, y + 37), (x + 28, y + 33), (x + 17, y + 17),
+               (x + 28, y + 14)]
     shadow = [(px + 3, py + 3) for px, py in pointer]
-    draw.polygon(shadow, fill="#000000")
-    draw.polygon(pointer, fill="#ffffff", outline="#111111")
-    draw.line((x + 5, y + 6, x + 8, y + 23), fill="#b8b8b8", width=1)
+    draw.polygon(shadow, fill="#151515")
+    draw.polygon(pointer, fill="#ffffff", outline="#121212")
+    draw.line((x + 5, y + 5, x + 8, y + 22), fill="#b8b8b8", width=1)
     if pressed:
-        draw.ellipse((x - 9, y - 9, x + 42, y + 42), outline="#5ca8ff", width=2)
-        draw.ellipse((x - 4, y - 4, x + 37, y + 37), outline="#5ca8ff", width=1)
+        strength = max(0.0, min(1.0, click_strength))
+        radius = int(round(12 + 7 * strength))
+        center_x, center_y = x + 3, y + 3
+        draw.ellipse((center_x - radius, center_y - radius,
+                      center_x + radius, center_y + radius),
+                     outline="#78a7d3", width=2)
+        draw.ellipse((center_x - 3, center_y - 3, center_x + 3, center_y + 3),
+                     fill="#78a7d3")
 
 
 def draw_dashed_box(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int],
@@ -86,113 +108,151 @@ def draw_dashed_box(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int],
                        fill="#ffffff", outline=colour, width=1)
 
 
-def illustrator_shell(opacity: int = 100, selected: bool = False) -> tuple[Image.Image, ImageDraw.ImageDraw]:
-    im = Image.new("RGB", (W, H), "#252525")
+def illustrator_shell(
+    opacity: int = 100,
+    selected: bool = False,
+) -> tuple[Image.Image, ImageDraw.ImageDraw]:
+    """Draw a restrained Illustrator-like workspace around the demo action."""
+    im = Image.new("RGB", (W, H), "#242424")
     draw = ImageDraw.Draw(im)
 
-    # Illustrator desktop title bar.  The layout deliberately gives the Layers
-    # dock enough width to remain legible when the README is viewed on a phone.
-    draw.rectangle((0, 0, W, 31), fill="#242424")
-    draw.ellipse((14, 10, 24, 20), fill="#ff5f57")
-    draw.ellipse((30, 10, 40, 20), fill="#ffbd2e")
-    draw.ellipse((46, 10, 56, 20), fill="#28c840")
-    draw.rectangle((78, 6, 101, 26), fill="#ff9a00")
-    text(draw, (83, 7), "Ai", 14, "#242424", bold=True)
-    text(draw, (112, 7), "kuai-kuai.ai @ 100% (RGB/Preview)", 13, "#d8d8d8")
-    text(draw, (1055, 7), "Adobe Illustrator", 13, "#a9a9a9")
+    # Application bar, menu bar, and Control panel follow Illustrator's
+    # horizontal workspace hierarchy.  The dark surfaces are neutral charcoal,
+    # with blue only reserved for selection feedback.
+    draw.rectangle((0, 0, W, 28), fill="#252525")
+    draw.ellipse((14, 9, 24, 19), fill="#ff5f57")
+    draw.ellipse((30, 9, 40, 19), fill="#ffbd2e")
+    draw.ellipse((46, 9, 56, 19), fill="#28c840")
+    draw.rectangle((78, 5, 102, 25), fill="#ff9a00")
+    text(draw, (83, 6), "Ai", 14, "#242424", bold=True)
+    text(draw, (113, 6), "kuai-kuai.ai @ 100% (RGB/Preview)", 13, "#d8d8d8")
+    text(draw, (1008, 6), "Essentials", 12, "#bdbdbd")
+    text(draw, (1108, 6), "Adobe Illustrator", 12, "#8f8f8f")
 
-    # Application menu and Properties control bar.
-    draw.rectangle((0, 31, W, 61), fill="#303030")
-    for x, label in [(18, "File"), (58, "Edit"), (98, "Object"), (151, "Type"),
+    draw.rectangle((0, 28, W, 59), fill="#303030")
+    for x, label in [(18, "File"), (57, "Edit"), (98, "Object"), (151, "Type"),
                      (190, "Select"), (244, "Effect"), (294, "View"),
-                     (339, "Window"), (405, "Help")]:
-        text(draw, (x, 39), label, 12, "#e0e0e0")
-    draw.rectangle((0, 61, W, 101), fill="#3a3a3a")
-    text(draw, (15, 74), "Selection", 11, "#a9a9a9")
-    rounded(draw, (82, 68, 174, 93), 3, "#262626", "#5c5c5c")
-    text(draw, (92, 74), "Image" if selected else "No Selection", 11, "#e0e0e0")
-    for x, label, value in [(205, "X:", "—"), (286, "Y:", "—"), (367, "W:", "—"),
-                            (448, "H:", "—")]:
-        text(draw, (x, 75), label, 11, "#a9a9a9")
-        rounded(draw, (x + 18, 68, x + 70, 93), 3, "#262626", "#5c5c5c")
-        text(draw, (x + 28, 75), value, 11, "#e0e0e0")
-    text(draw, (555, 75), "Transform", 11, "#a9a9a9")
-    for x in (620, 647, 674, 701):
-        rounded(draw, (x, 70, x + 22, 91), 3, "#292929", "#606060")
-    text(draw, (625, 73), "↔", 12, "#e0e0e0")
-    text(draw, (652, 73), "↕", 12, "#e0e0e0")
-    text(draw, (679, 73), "⌗", 12, "#e0e0e0")
-    text(draw, (706, 73), "⊕", 12, "#e0e0e0")
-    text(draw, (752, 75), "Opacity:", 11, "#a9a9a9")
-    rounded(draw, (811, 68, 878, 93), 3, "#262626", "#5c5c5c")
-    text(draw, (824, 75), f"{opacity}%" if selected else "—", 11, "#f0f0f0")
+                     (340, "Window"), (406, "Help")]:
+        text(draw, (x, 37), label, 12, "#e0e0e0")
 
-    # Workspace, toolbar and document canvas.
-    draw.rectangle((0, 101, W, 686), fill="#2c2c2c")
-    draw.rectangle((0, 101, 53, 686), fill="#373737")
-    # Small vector glyphs read more like Illustrator's toolbar than a column
-    # of decorative arrows or emoji.  The selected tool is highlighted.
-    draw.rectangle((7, 111, 46, 145), fill="#4a4a4a")
-    draw.line((17, 120, 33, 136), fill="#efefef", width=2)
-    draw.line((17, 120, 17, 130), fill="#efefef", width=2)
-    draw.line((17, 120, 27, 120), fill="#efefef", width=2)
-    draw.rectangle((16, 157, 35, 176), outline="#cfcfcf", width=2)
-    text(draw, (19, 193), "T", 20, "#ededed", bold=True)
-    draw.line((15, 239, 34, 239), fill="#d6d6d6", width=2)
-    draw.line((15, 239, 23, 228), fill="#d6d6d6", width=2)
-    draw.ellipse((14, 269, 35, 290), outline="#d6d6d6", width=2)
-    draw.line((14, 320, 35, 320), fill="#d6d6d6", width=2)
-    draw.line((18, 316, 31, 324), fill="#d6d6d6", width=2)
-    draw.arc((14, 361, 34, 381), 215, 500, fill="#d6d6d6", width=2)
-    draw.line((22, 368, 35, 380), fill="#d6d6d6", width=2)
-    draw.line((15, 411, 34, 411), fill="#d6d6d6", width=2)
-    draw.line((15, 411, 15, 430), fill="#d6d6d6", width=2)
-    draw.line((34, 411, 34, 430), fill="#d6d6d6", width=2)
-    draw.ellipse((17, 459, 33, 475), outline="#d6d6d6", width=2)
-    draw.line((33, 474, 40, 481), fill="#d6d6d6", width=2)
-    text(draw, (16, 627), "Fill", 9, "#999999")
-    draw.rectangle((13, 643, 30, 660), fill="#ffffff", outline="#161616")
-    draw.rectangle((23, 651, 40, 668), fill="#202020", outline="#c4c4c4")
+    draw.rectangle((0, 59, W, 100), fill="#3a3a3a")
+    text(draw, (15, 72), "Selection", 11, "#a9a9a9")
+    rounded(draw, (82, 66, 175, 92), 3, "#262626", "#5c5c5c")
+    text(draw, (92, 73), "Image" if selected else "No Selection", 11, "#e0e0e0")
+    for x, label in [(205, "X:"), (286, "Y:"), (367, "W:"), (448, "H:")]:
+        text(draw, (x, 73), label, 11, "#a9a9a9")
+        rounded(draw, (x + 18, 66, x + 70, 92), 3, "#262626", "#5c5c5c")
+        text(draw, (x + 29, 73), "—", 11, "#e0e0e0")
+    text(draw, (555, 73), "Transform", 11, "#a9a9a9")
+    for x in (620, 649, 678, 707):
+        rounded(draw, (x, 68, x + 23, 90), 3, "#292929", "#606060")
+    # Four small vector controls, avoiding mismatched text glyphs.
+    draw.line((626, 79, 637, 79), fill="#e0e0e0", width=1)
+    draw.line((628, 76, 625, 79), fill="#e0e0e0", width=1)
+    draw.line((635, 76, 638, 79), fill="#e0e0e0", width=1)
+    draw.line((655, 74, 655, 84), fill="#e0e0e0", width=1)
+    draw.line((652, 77, 655, 74), fill="#e0e0e0", width=1)
+    draw.line((658, 77, 655, 74), fill="#e0e0e0", width=1)
+    draw.rectangle((684, 74, 695, 85), outline="#e0e0e0", width=1)
+    draw.line((711, 79, 725, 79), fill="#e0e0e0", width=1)
+    draw.line((718, 73, 718, 85), fill="#e0e0e0", width=1)
+    text(draw, (752, 73), "Opacity:", 11, "#a9a9a9")
+    rounded(draw, (811, 66, 878, 92), 3, "#262626", "#5c5c5c")
+    text(draw, (824, 73), f"{opacity}%" if selected else "—", 11, "#f0f0f0")
 
-    # Artboard and pasteboard.  The centre document is intentionally quiet so
-    # the real action—the selected object staying on the artboard while its
-    # Layers row moves—remains the visual focus.
-    draw.rectangle((53, 101, 900, 686), fill="#292929")
-    text(draw, (74, 119), "kuai-kuai.ai", 11, "#9b9b9b")
-    draw.rectangle((92, 143, 865, 653), fill="#1f1f1f", outline="#575757")
-    draw.rectangle((122, 169, 835, 627), fill="#ffffff", outline="#b7b7b7")
-    text(draw, (143, 184), "ARTBOARD 01", 10, "#a6a6a6")
-    # A restrained editorial poster gives the mock document a believable
-    # designer context without competing with the Layers panel.
-    rounded(draw, (278, 242, 680, 548), 2, "#f4f1e9", "#d1c5a3", width=1)
-    draw.rectangle((278, 242, 680, 296), fill="#232f40")
-    draw.rectangle((278, 296, 344, 548), fill="#232f40")
-    draw.ellipse((532, 290, 654, 412), fill="#e97054")
-    draw.ellipse((410, 414, 486, 490), fill="#efc65d")
-    draw.rectangle((488, 344, 600, 456), outline="#232f40", width=2)
-    text(draw, (296, 260), "STUDIO / FORM", 11, "#f6f2e8", bold=True)
-    text(draw, (365, 324), "01", 44, "#232f40", bold=True)
-    text(draw, (365, 382), "OBJECT", 11, "#232f40", bold=True)
-    text(draw, (365, 402), "IMAGE / TYPE", 10, "#6d747d")
-    draw.line((365, 476, 628, 476), fill="#232f40", width=1)
-    draw.line((365, 488, 520, 488), fill="#b4a991", width=1)
-    text(draw, (296, 508), "FORM STUDY", 9, "#f4f1e9", bold=True)
+    # Main workspace.
+    draw.rectangle((0, 100, W, 686), fill="#292929")
+    draw.rectangle((0, 100, 55, 686), fill="#353535")
+    draw.rectangle((55, 100, 900, 686), fill="#282828")
+
+    # Tools panel: deliberately drawn as a single consistent line-icon set.
+    draw.rectangle((7, 109, 48, 143), fill="#4a4a4a")
+    draw.line((17, 119, 34, 136), fill="#efefef", width=2)
+    draw.line((17, 119, 17, 130), fill="#efefef", width=2)
+    draw.line((17, 119, 28, 119), fill="#efefef", width=2)
+    draw.rectangle((16, 156, 35, 175), outline="#cfcfcf", width=2)
+    text(draw, (19, 191), "T", 20, "#ededed", bold=True)
+    draw.line((15, 236, 35, 236), fill="#d6d6d6", width=2)
+    draw.line((15, 236, 23, 226), fill="#d6d6d6", width=2)
+    draw.ellipse((14, 266, 35, 287), outline="#d6d6d6", width=2)
+    draw.line((14, 316, 35, 316), fill="#d6d6d6", width=2)
+    draw.line((18, 312, 31, 320), fill="#d6d6d6", width=2)
+    draw.arc((14, 356, 34, 376), 215, 500, fill="#d6d6d6", width=2)
+    draw.line((22, 363, 35, 375), fill="#d6d6d6", width=2)
+    draw.line((15, 406, 34, 406), fill="#d6d6d6", width=2)
+    draw.line((15, 406, 15, 425), fill="#d6d6d6", width=2)
+    draw.line((34, 406, 34, 425), fill="#d6d6d6", width=2)
+    draw.ellipse((17, 454, 33, 470), outline="#d6d6d6", width=2)
+    draw.line((33, 469, 40, 476), fill="#d6d6d6", width=2)
+    text(draw, (16, 624), "Fill", 9, "#999999")
+    draw.rectangle((13, 641, 30, 658), fill="#ffffff", outline="#161616")
+    draw.rectangle((23, 649, 40, 666), fill="#202020", outline="#c4c4c4")
+
+    # Canvas and rulers.  These quiet structural cues make the mockup read as
+    # a real design-tool workspace instead of a dashboard illustration.
+    draw.rectangle((55, 100, 900, 122), fill="#353535")
+    draw.rectangle((55, 122, 77, 686), fill="#353535")
+    for x in range(88, 900, 50):
+        tick = 10 if x % 100 == 88 else 6
+        draw.line((x, 122, x, 122 + tick), fill="#888888", width=1)
+        if x % 100 == 88:
+            text(draw, (x - 4, 104), str((x - 88) // 10), 8, "#9f9f9f")
+    for y in range(139, 686, 50):
+        tick = 10 if y % 100 == 39 else 6
+        draw.line((67, y, 67 + tick, y), fill="#888888", width=1)
+        if y % 100 == 39:
+            text(draw, (57, y - 4), str((y - 139) // 10), 8, "#9f9f9f")
+    text(draw, (84, 108), "kuai-kuai.ai", 11, "#a6a6a6")
+
+    # A clean typographic artboard gives the placed image a believable context
+    # without inventing a noisy poster or competing with the Layers action.
+    art_x1, art_y1, art_x2, art_y2 = 160, 171, 865, 649
+    draw.rectangle((art_x1 - 7, art_y1 - 7, art_x2 + 7, art_y2 + 7),
+                   fill="#1f1f1f", outline="#5b5b5b")
+    draw.rectangle((art_x1, art_y1, art_x2, art_y2),
+                   fill="#f7f6f2", outline="#d8d6d0")
+    text(draw, (207, 199), "KUAI-KUAI / WORKFLOW 01", 11, "#535957", bold=True)
+    draw.rectangle((793, 196, 818, 221), fill="#5c9948")
+    draw.line((207, 230, 818, 230), fill="#202624", width=1)
+    text(draw, (207, 254), "SAFE", 64, "#202624", bold=True)
+    text(draw, (207, 324), "MODE", 64, "#202624", bold=True)
+    text(draw, (211, 403), "A small ritual for stable builds.", 14, "#626864")
+    draw.rectangle((705, 257, 808, 461), fill="#222a27")
+    draw.rectangle((729, 281, 784, 336), fill="#5c9948")
+    draw.rectangle((729, 361, 784, 416), outline="#dfe8dd", width=2)
+    draw.line((729, 439, 784, 439), fill="#dfe8dd", width=2)
+    draw.line((207, 540, 818, 540), fill="#202624", width=1)
+    text(draw, (207, 560), "OBJECT / IMAGE / TYPE", 11, "#202624", bold=True)
+    text(draw, (207, 581), "Keep the working file calm.", 12, "#626864")
+    text(draw, (703, 560), "01", 11, "#202624", bold=True)
+    text(draw, (748, 560), "VECTOR STUDY", 11, "#626864")
 
     # Right-side dock and Layers panel.
-    draw.rectangle((900, 101, W, 686), fill="#343434")
-    draw.rectangle((910, 101, W, 141), fill="#2f2f2f")
+    draw.rectangle((900, 100, W, 686), fill="#343434")
+    draw.line((900, 100, 900, 686), fill="#161616", width=2)
+    draw.rectangle((910, 100, W, 140), fill="#2f2f2f")
     for x, label in [(918, "Properties"), (1018, "Layers"), (1110, "Libraries")]:
-        text(draw, (x, 112), label, 12, "#e5e5e5" if label == "Layers" else "#999999",
+        text(draw, (x, 111), label, 12,
+             "#e5e5e5" if label == "Layers" else "#999999",
              bold=label == "Layers")
-    draw.rectangle((910, 141, W, 185), fill="#404040")
-    text(draw, (922, 153), "Layers", 15, "#eeeeee", bold=True)
-    # Panel menu and new-layer icons, drawn as simple UI glyphs.
-    draw.line((1197, 153, 1210, 153), fill="#cccccc", width=2)
-    draw.line((1197, 158, 1210, 158), fill="#cccccc", width=2)
-    draw.line((1197, 163, 1210, 163), fill="#cccccc", width=2)
-    draw.rectangle((1230, 151, 1242, 163), outline="#cccccc", width=1)
-    draw.line((1236, 147, 1236, 167), fill="#cccccc", width=1)
-    draw.line((1227, 157, 1245, 157), fill="#cccccc", width=1)
+    draw.line((1016, 137, 1080, 137), fill="#d8d8d8", width=2)
+    draw.rectangle((910, 140, W, 183), fill="#404040")
+    text(draw, (922, 151), "Layers", 15, "#eeeeee", bold=True)
+    draw.line((1197, 151, 1210, 151), fill="#cccccc", width=2)
+    draw.line((1197, 156, 1210, 156), fill="#cccccc", width=2)
+    draw.line((1197, 161, 1210, 161), fill="#cccccc", width=2)
+    draw.rectangle((1230, 149, 1242, 161), outline="#cccccc", width=1)
+    draw.line((1236, 145, 1236, 165), fill="#cccccc", width=1)
+    draw.line((1227, 155, 1245, 155), fill="#cccccc", width=1)
+
+    # Persistent status bar at the bottom of the application frame.
+    draw.rectangle((0, 686, W, H), fill="#242424")
+    draw.line((55, 686, 55, H), fill="#111111", width=1)
+    text(draw, (70, 697), "Selection Tool", 11, "#bcbcbc")
+    text(draw, (202, 697), "RGB/Preview", 11, "#8e8e8e")
+    text(draw, (1105, 697), "100%", 11, "#d0d0d0")
+    draw.line((1151, 693, 1151, 705), fill="#666666", width=1)
+    text(draw, (1172, 697), "01 / 01", 11, "#8e8e8e")
 
     return im, draw
 
@@ -217,15 +277,17 @@ TALISMAN_LAYER = "KUAI_KUAI_TALISMAN"
 ARTWORK_LAYERS = ("TEXT", "ARTWORK", "BACKGROUND")
 
 
-def illustrator_state(progress: float, final: bool = False) -> dict[str, int | bool | str]:
+def illustrator_state(progress: float, final: bool = False) -> dict[str, int | float | bool | str]:
     """Return the Illustrator actions represented by a demo frame.
 
     The package never travels into the right dock. The selected layer row moves
     to the bottom, then the selected object's Opacity is reduced to 0%.
     """
     p = max(0.0, min(1.0, progress))
-    reorder = max(0.0, min(1.0, (p - 0.32) / 0.36))
-    opacity_fade = max(0.0, min(1.0, (p - 0.70) / 0.20))
+    reorder = max(0.0, min(1.0, (p - 0.36) / 0.25))
+    # The field is edited first; the placed object fades only after the
+    # entered value is committed, so the UI never shows contradictory state.
+    opacity_fade = max(0.0, min(1.0, (p - 0.84) / 0.07))
     if final:
         reorder = 1.0
         opacity_fade = 1.0
@@ -233,20 +295,26 @@ def illustrator_state(progress: float, final: bool = False) -> dict[str, int | b
     if final:
         opacity = 0
     phase = "place"
-    if p >= 0.24:
+    if p >= 0.22:
         phase = "drag-layer"
-    if p >= 0.70:
+    if p >= 0.67:
         phase = "set-opacity"
+    if p >= 0.94:
+        phase = "lock-layer"
     if final:
         phase = "complete"
     return {
         "reorder": reorder,
         "opacity": opacity,
-        "placed": final or p >= 0.08,
-        "selected": final or p >= 0.14,
-        "locked": final or p >= 0.94,
-        "layer_dragging": not final and 0.32 <= p < 0.70,
-        "opacity_adjusting": not final and 0.70 <= p < 0.92,
+        "placed": final or p >= 0.06,
+        "selected": final or p >= 0.13,
+        "locked": final or p >= 0.98,
+        "layer_dragging": not final and 0.36 <= p < 0.61,
+        "drop_feedback": not final and 0.61 <= p < 0.67,
+        "opacity_adjusting": not final and 0.76 <= p < 0.87,
+        "opacity_focus": not final and 0.76 <= p < 0.87,
+        "opacity_entry": final or p >= 0.80,
+        "lock_adjusting": not final and 0.94 <= p < 0.99,
         "package_alpha": opacity,
         "phase": phase,
     }
@@ -256,37 +324,44 @@ def draw_layers(draw: ImageDraw.ImageDraw, state: dict[str, int | bool | str]) -
     """Draw a Layers panel whose row order changes, not the package position."""
     panel_x = 910
     panel_right = 1279
-    y0 = 196
-    row_h = 48
+    y0 = 184
+    row_h = 49
     reorder = float(state["reorder"])
     talisman_y = y0
 
     def render_row(name: str, y: int, selected: bool = False, dragged: bool = False) -> None:
         is_talisman = name == TALISMAN_LAYER
-        row_fill = "#4b5d70" if selected else "#383838"
+        row_fill = "#4b6075" if selected else "#363636"
+        if dragged:
+            draw.rectangle((panel_x + 5, y + 5, panel_right - 2, y + row_h + 3),
+                           fill="#1f1f1f")
         draw.rectangle((panel_x, y, panel_right, y + row_h), fill=row_fill)
+        draw.line((panel_x, y + row_h, panel_right, y + row_h),
+                  fill="#494949", width=1)
+        if selected:
+            draw.rectangle((panel_x, y, panel_x + 3, y + row_h), fill="#f0a23a")
         if dragged:
             draw.rectangle((panel_x + 1, y + 1, panel_right - 1, y + row_h - 1),
-                           outline="#62b2ff", width=2)
-        text(draw, (920, y + 16), "▸" if not is_talisman else "", 11, "#bbbbbb")
-        # The eye stays on. Opacity 0% is the deliberate Illustrator hiding step.
-        draw_eye(draw, 944, y + 13, visible=True)
-        draw_lock(draw, 973, y + 12, locked=is_talisman and bool(state["locked"]))
-        # Layer thumbnails are a small but important realism cue in the real
-        # panel; the talisman keeps a green swatch even after Opacity is 0%.
+                           outline="#77a9d6", width=2)
+        if not is_talisman:
+            draw.polygon([(921, y + 21), (926, y + 25), (921, y + 29)],
+                         fill="#bdbdbd")
+        draw_eye(draw, 939, y + 13, visible=True)
+        draw_lock(draw, 963, y + 12, locked=is_talisman and bool(state["locked"]))
+        # The package keeps its green thumbnail even after Opacity reaches 0%.
         if is_talisman:
-            draw.rectangle((1001, y + 14, 1025, y + 34), fill="#5cab45", outline="#c7d8c0")
-            draw.rectangle((1006, y + 18, 1020, y + 30), fill="#d7e6c4")
+            draw.rectangle((990, y + 13, 1016, y + 35), fill="#5cab45", outline="#c7d8c0")
+            draw.rectangle((995, y + 17, 1011, y + 31), fill="#d7e6c4")
         else:
-            draw.rectangle((1001, y + 14, 1025, y + 34), fill="#777777", outline="#a8a8a8")
-            draw.line((1005, y + 29, 1021, y + 18), fill="#d4d4d4", width=1)
+            draw.rectangle((990, y + 13, 1016, y + 35), fill="#777777", outline="#a8a8a8")
+            draw.line((994, y + 30, 1012, y + 18), fill="#d4d4d4", width=1)
         display_name = "KUAI-KUAI / TALISMAN" if is_talisman else name
-        text(draw, (1036, y + 15), display_name, 12, "#ffffff" if selected else "#d4d4d4",
+        text(draw, (1028, y + 15), display_name, 12, "#ffffff" if selected else "#d4d4d4",
              bold=selected)
         if selected:
-            draw.ellipse((1243, y + 17, 1254, y + 28), outline="#ff9d00", width=2)
+            draw.ellipse((1243, y + 18, 1254, y + 29), outline="#f2a13a", width=2)
         else:
-            draw.ellipse((1244, y + 18, 1253, y + 27), outline="#a7a7a7")
+            draw.ellipse((1244, y + 19, 1253, y + 28), outline="#a7a7a7")
 
     if bool(state["layer_dragging"]):
         # During a real Layers-panel drag, the selected row floats over the
@@ -297,32 +372,48 @@ def draw_layers(draw: ImageDraw.ImageDraw, state: dict[str, int | bool | str]) -
         render_row(TALISMAN_LAYER, talisman_y, selected=True, dragged=True)
         drop_y = y0 + 3 * row_h
         draw.line((panel_x + 4, drop_y - 4, panel_right - 4, drop_y - 4),
-                  fill="#62b2ff", width=2)
+                  fill="#77a9d6", width=2)
     else:
-        rows = (TALISMAN_LAYER,) + ARTWORK_LAYERS if reorder < 1.0 else ARTWORK_LAYERS + (TALISMAN_LAYER,)
+        rows = ((TALISMAN_LAYER,) + ARTWORK_LAYERS
+                if reorder < 1.0 else ARTWORK_LAYERS + (TALISMAN_LAYER,))
         talisman_y = y0 + (3 if reorder >= 1.0 else 0) * row_h
         for index, name in enumerate(rows):
             render_row(name, y0 + index * row_h,
                        selected=name == TALISMAN_LAYER and bool(state["selected"]))
 
-    text(draw, (922, 407), "▾  Appearance", 12, "#bcbcbc")
-    draw.line((panel_x, 429, 1280, 429), fill="#505050")
-    text(draw, (934, 448), "Opacity", 12, "#d0d0d0")
-    rounded(draw, (1032, 440, 1168, 473), 3, "#262626", "#777777")
-    text(draw, (1048, 448), f"{int(state['opacity'])}%", 13, "#f0f0f0", bold=bool(state["opacity_adjusting"]))
-    text(draw, (1182, 448), "↕", 13, "#9e9e9e")
-    text(draw, (922, 507), "▾  Transparency", 12, "#bcbcbc")
-    draw.line((panel_x, 529, 1280, 529), fill="#505050")
-    text(draw, (934, 546), "Selected object", 11, "#969696")
-    text(draw, (1032, 546), "Image", 11, "#d2d2d2")
+    text(draw, (922, 397), "Appearance", 12, "#bcbcbc")
+    draw.line((panel_x, 416, 1280, 416), fill="#505050")
+    text(draw, (934, 435), "Opacity", 12, "#d0d0d0")
+    field_outline = "#73a8d6" if bool(state["opacity_focus"]) else "#777777"
+    rounded(draw, (1018, 426, 1180, 462), 3, "#262626", field_outline,
+            width=2 if bool(state["opacity_focus"]) else 1)
+    value = "0%" if bool(state["opacity_entry"]) else f"{int(state['opacity'])}%"
+    if bool(state["opacity_focus"]):
+        draw.rectangle((1038, 432, 1063, 455), fill="#40617d")
+    text(draw, (1040, 435), value, 13, "#f0f0f0",
+         bold=bool(state["opacity_adjusting"]))
+    draw.line((1193, 434, 1193, 454), fill="#9e9e9e", width=1)
+    draw.line((1190, 437, 1193, 434), fill="#9e9e9e", width=1)
+    draw.line((1196, 437, 1193, 434), fill="#9e9e9e", width=1)
+    draw.line((1190, 451, 1193, 454), fill="#9e9e9e", width=1)
+    draw.line((1196, 451, 1193, 454), fill="#9e9e9e", width=1)
+    text(draw, (934, 478), "Blending Mode", 12, "#d0d0d0")
+    rounded(draw, (1018, 469, 1180, 501), 3, "#262626", "#777777")
+    text(draw, (1034, 477), "Normal", 12, "#d0d0d0")
+    text(draw, (922, 529), "Transparency", 12, "#bcbcbc")
+    draw.line((panel_x, 548, 1280, 548), fill="#505050")
+    text(draw, (934, 567), "Selected object", 11, "#969696")
+    text(draw, (1032, 567), "Image", 11, "#d2d2d2")
 
     return {
         "row_x": 1100,
         "talisman_y": talisman_y + row_h // 2,
         "top_talisman_y": y0 + row_h // 2,
         "bottom_talisman_y": y0 + 3 * row_h + row_h // 2,
-        "opacity_x": 1090,
-        "opacity_y": 456,
+        "opacity_x": 1098,
+        "opacity_y": 444,
+        "lock_x": 971,
+        "lock_y": y0 + 3 * row_h + row_h // 2,
     }
 
 
@@ -330,7 +421,7 @@ def illustrator_frame(progress: float, final: bool = False) -> Image.Image:
     state = illustrator_state(progress, final=final)
     im, draw = illustrator_shell(opacity=int(state["opacity"]), selected=bool(state["selected"]))
     layer = draw_layers(draw, state)
-    source_x, source_y = 510, 392
+    source_x, source_y = 510, 405
     package = fit_package(174)
     package_w, package_h = package.size
     object_x, object_y = source_x - package_w // 2, source_y - package_h // 2
@@ -343,42 +434,89 @@ def illustrator_frame(progress: float, final: bool = False) -> Image.Image:
                                    object_x + package_w + 7, object_y + package_h + 7))
 
     p = max(0.0, min(1.0, progress))
-    if p < 0.14:
-        amount = p / 0.14
-        cursor_x = lerp(730, source_x, amount)
-        cursor_y = lerp(230, source_y, amount)
+    if p < 0.12:
+        amount = ease_out_quart(p / 0.12)
+        cursor_x = lerp(760, source_x, amount)
+        cursor_y = lerp(222, source_y, amount)
         pressed = False
-    elif p < 0.26:
-        cursor_x, cursor_y, pressed = source_x, source_y, True
-    elif p < 0.70:
-        amount = (p - 0.26) / 0.44
+        click_strength = 0.0
+    elif p < 0.22:
+        cursor_x, cursor_y = source_x, source_y
+        pressed = True
+        click_strength = smoothstep((p - 0.12) / 0.10)
+    elif p < 0.36:
+        amount = smoothstep((p - 0.22) / 0.14)
         cursor_x = lerp(source_x, layer["row_x"], amount)
         cursor_y = lerp(source_y, layer["top_talisman_y"], amount)
-        if p >= 0.32:
-            cursor_y = layer["talisman_y"]
-        pressed = True
-    elif p < 0.82:
-        amount = (p - 0.70) / 0.12
-        cursor_x = lerp(layer["row_x"], layer["opacity_x"], amount)
-        cursor_y = lerp(layer["talisman_y"], layer["opacity_y"], amount)
         pressed = False
+        click_strength = 0.0
+    elif p < 0.61:
+        amount = smoothstep((p - 0.36) / 0.25)
+        cursor_x = layer["row_x"]
+        cursor_y = layer["talisman_y"]
+        pressed = True
+        click_strength = 1.0 - abs(amount - 0.5) * 0.18
+    elif p < 0.67:
+        cursor_x, cursor_y = layer["row_x"], layer["bottom_talisman_y"]
+        pressed = p < 0.635
+        click_strength = 1.0
+    elif p < 0.76:
+        amount = ease_out_quart((p - 0.67) / 0.09)
+        cursor_x = lerp(layer["row_x"], layer["opacity_x"], amount)
+        cursor_y = lerp(layer["bottom_talisman_y"], layer["opacity_y"], amount)
+        pressed = False
+        click_strength = 0.0
+    elif p < 0.81:
+        cursor_x, cursor_y = layer["opacity_x"], layer["opacity_y"]
+        pressed = True
+        click_strength = smoothstep((p - 0.76) / 0.05)
+    elif p < 0.87:
+        cursor_x, cursor_y = layer["opacity_x"], layer["opacity_y"]
+        pressed = False
+        click_strength = 0.0
+    elif p < 0.94:
+        amount = smoothstep((p - 0.87) / 0.07)
+        cursor_x = lerp(layer["opacity_x"], layer["lock_x"], amount)
+        cursor_y = lerp(layer["opacity_y"], layer["lock_y"], amount)
+        pressed = False
+        click_strength = 0.0
+    elif p < 1.0:
+        cursor_x, cursor_y = layer["lock_x"], layer["lock_y"]
+        pressed = p < 0.975
+        click_strength = 1.0
     else:
-        cursor_x, cursor_y, pressed = layer["opacity_x"], layer["opacity_y"], False
+        cursor_x, cursor_y, pressed, click_strength = layer["lock_x"], layer["lock_y"], False, 0.0
 
-    draw_mouse(draw, cursor_x, cursor_y, pressed=pressed)
+    draw_mouse(draw, cursor_x, cursor_y, pressed=pressed, click_strength=click_strength)
     if final:
-        text(draw, (73, 656), "Layers: bottom  ·  Opacity 0%  ·  eye on  ·  locked", 13,
+        text(draw, (73, 661), "Layers: bottom  ·  Opacity 0%  ·  eye on  ·  locked", 13,
              "#6ed19d", bold=True)
-    elif p < 0.20:
-        text(draw, (73, 656), "1  Place the official green package on the artboard", 13, "#d0d0d0")
-    elif p < 0.32:
-        text(draw, (73, 656), "2  Select the placed image — keep it on the artboard", 13,
+    elif p < 0.12:
+        text(draw, (73, 661), "1  Move to the placed package", 13, "#d0d0d0")
+    elif p < 0.22:
+        text(draw, (73, 661), "2  Click the package to select its layer", 13,
              "#80bfff", bold=True)
-    elif p < 0.70:
-        text(draw, (73, 656), "3  Drag the selected layer row to the bottom of Layers", 13,
+    elif p < 0.36:
+        text(draw, (73, 661), "3  Follow the selected row in Layers", 13,
              "#80bfff", bold=True)
+    elif p < 0.61:
+        text(draw, (73, 661), "4  Hold and drag the layer row to the bottom", 13,
+             "#80bfff", bold=True)
+    elif p < 0.67:
+        text(draw, (73, 661), "5  Release at the bottom; the package stays on the artboard", 13,
+             "#d0d0d0")
+    elif p < 0.78:
+        text(draw, (73, 661), "6  Select Opacity and enter 0%", 13,
+             "#dcdcaa", bold=True)
+    elif p < 0.87:
+        text(draw, (73, 661), "6  Enter 0% — the eye stays on", 13,
+             "#dcdcaa", bold=True)
+    elif p < 0.94:
+        text(draw, (73, 661), "7  Keep the eye on; move to the lock column", 13,
+             "#d0d0d0")
     else:
-        text(draw, (73, 656), "4  Set Opacity to 0% — keep the eye on", 13, "#dcdcaa", bold=True)
+        text(draw, (73, 661), "8  Lock the bottom layer", 13,
+             "#6ed19d" if state["locked"] else "#d0d0d0", bold=bool(state["locked"]))
     return im
 
 
@@ -543,22 +681,29 @@ def code_frame(progress: float, final: bool = False) -> Image.Image:
     return im
 
 
-def save_demo(name: str, maker) -> None:
+def save_demo(
+    name: str,
+    maker,
+    motion_count: int = 19,
+    motion_duration: int = 90,
+) -> None:
     # More hold frames make the operation readable on GitHub while preserving
     # the pointer movement and the row-by-row code rendering.
-    motion = [maker(i / 18) for i in range(19)]
+    motion = [maker(i / (motion_count - 1)) for i in range(motion_count)]
     hold = [maker(1.0, final=True) for _ in range(9)]
     frames = motion + hold
     gif = DOCS / f"{name}.gif"
     png = DOCS / f"{name}.png"
     frames[-1].save(png, optimize=True)
     frames[0].save(gif, save_all=True, append_images=frames[1:],
-                   duration=[90] * len(motion) + [170] * 8 + [1200], loop=0, optimize=False)
+                   duration=[motion_duration] * len(motion) + [170] * 8 + [1200],
+                   loop=0, optimize=False)
 
 
 def main() -> None:
     DOCS.mkdir(parents=True, exist_ok=True)
-    save_demo("demo-illustrator-kuai-kuai", illustrator_frame)
+    save_demo("demo-illustrator-kuai-kuai", illustrator_frame,
+              motion_count=31, motion_duration=105)
     save_demo("demo-code-kuai-kuai", code_frame)
     print("created realistic Illustrator and code-drawn demos")
 
