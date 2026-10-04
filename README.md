@@ -2,13 +2,23 @@
 
 ### 拜一包乖乖，跟 Bug 說 Bye-bye。
 
-![Illustrator：把官方綠色乖乖拖到 Layers 最底部，再將 Opacity 設為 0%](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.gif)
+## 先看兩種安放方式
 
-![Illustrator 操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.png)
+### 設計師｜Illustrator
+
+把圖留在畫板上，將它的 Layers 列拖到最底部，再以 `Opacity 0%` 隱藏；眼睛保持開啟，最後鎖定。
+
+![Illustrator：把官方綠色乖乖留在畫板上，拖曳 Layers 列到底部，再將 Opacity 設為 0%](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.gif)
+
+[GIF 無法播放？開啟 Illustrator 靜態 PNG 備援 →](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.png)
+
+### 工程師｜直接用程式碼
+
+不插入圖片，直接把帶有明暗層次的 ASCII 乖乖寫進原始碼，在 build hook 輸出。
 
 ![程式碼：把 ASCII 乖乖寫進原始碼，在 build hook 輸出](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.gif)
 
-![程式碼操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.png)
+[GIF 無法播放？開啟程式碼靜態 PNG 備援 →](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-code-kuai-kuai.png)
 
 「拜拜」是祈福，「Bye-bye」是送走。
 
