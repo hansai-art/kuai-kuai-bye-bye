@@ -42,9 +42,10 @@ python3 "<skill-dir>/scripts/kuai.py" doctor --project "/path/to/project"
 
 - Photoshop：`scripts/photoshop-kuai.jsx` 先讓使用者選擇已獲授權的 PNG、JPG、JPEG 或 WebP，安放在可用的最底部、隱藏並鎖定。底部是 Background 時放在其上方，不轉換原本背景。
 - After Effects：`scripts/after-effects-kuai.jsx` 先讓使用者選擇已獲授權的圖檔，在目前合成底部安放，設成 Guide Layer、關閉可見性並鎖定。保留匯入素材，避免未來重開專案遺失來源。
-- Illustrator、Figma、Blender 等其他軟體：只有具備實際連線與該軟體支援的方法才操作，依 design.md 安放。不要宣稱 JSX 通用所有軟體。
+- Illustrator：把已獲授權的官方綠色圖檔置入文件，保持在畫板上，將 Layers 列拖到最底部，把 Opacity 設為 0%，眼睛保持開啟並鎖定。不要把圖片拖進右側面板。沒有 Illustrator 的實際連線時，只提供圖檔與操作指引，不宣稱已修改原生文件。
+- Figma、Blender 等其他軟體：只有具備實際連線與該軟體支援的方法才操作，依 design.md 安放。不要宣稱 JSX 通用所有軟體。
 
-圖層命名 `__乖乖拜拜_請勿刪除__`，既有同名圖層不重複新增。最底層仍可能透過透明背景出現在成品，必須另外隱藏／排除輸出。保留原專案，驗證圖層、位置、可見性與輸出排除，不自動儲存覆蓋或開始渲染。
+圖層命名 `__乖乖拜拜_請勿刪除__`，既有同名圖層不重複新增。Illustrator 流程以 Opacity 0% 隱藏，不把圖片拖進右側面板，也不以關閉眼睛取代透明度設定。保留原專案，驗證圖層、位置、Opacity、鎖定狀態與輸出排除，不自動儲存覆蓋或開始渲染。
 
 ## 回報
 

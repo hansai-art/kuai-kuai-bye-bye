@@ -17,6 +17,10 @@ CODE_SCRIPT = Path(__file__).resolve().parents[1] / "skills/kuai-kuai-bye-bye/sc
 code_spec = importlib.util.spec_from_file_location("code_kuai_kuai", CODE_SCRIPT)
 code_kuai_kuai = importlib.util.module_from_spec(code_spec)
 code_spec.loader.exec_module(code_kuai_kuai)
+DEMO_SCRIPT = Path(__file__).resolve().parents[1] / "scripts/build-demo-gifs.py"
+demo_spec = importlib.util.spec_from_file_location("build_demo_gifs", DEMO_SCRIPT)
+build_demo_gifs = importlib.util.module_from_spec(demo_spec)
+demo_spec.loader.exec_module(build_demo_gifs)
 
 class RitualTest(unittest.TestCase):
     def setUp(self):
@@ -162,6 +166,17 @@ class RitualTest(unittest.TestCase):
         self.assertIn(code_kuai_kuai.GREEN, output)
         self.assertIn(code_kuai_kuai.RESET, output)
         self.assertIn("[kuai-kuai] dev", output)
+
+    def test_illustrator_moves_layer_then_sets_opacity_zero(self):
+        dragging = build_demo_gifs.illustrator_state(0.55)
+        complete = build_demo_gifs.illustrator_state(1.0, final=True)
+        self.assertTrue(dragging["placed"])
+        self.assertTrue(dragging["layer_dragging"])
+        self.assertEqual(dragging["opacity"], 100)
+        self.assertEqual(complete["reorder"], 1.0)
+        self.assertEqual(complete["opacity"], 0)
+        self.assertTrue(complete["locked"])
+        self.assertEqual(complete["package_alpha"], 0)
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,7 +2,7 @@
 
 ### 拜一包乖乖，跟 Bug 說 Bye-bye。
 
-![Illustrator：把官方綠色乖乖拖進最底層](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.gif)
+![Illustrator：把官方綠色乖乖拖到 Layers 最底部，再將 Opacity 設為 0%](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.gif)
 
 ![Illustrator 操作畫面備援](https://raw.githubusercontent.com/hansai-art/kuai-kuai-bye-bye/main/docs/demo-illustrator-kuai-kuai.png)
 
@@ -27,7 +27,7 @@
 | 身分 | 乖乖放哪裡 | 真的做了什麼 |
 | --- | --- | --- |
 | 工程師 | `.kuai-kuai/` 與指定的原始碼 | 可選擇新增護身卡、官方圖檔、清冊、純註解，或用程式碼直接畫出像素版乖乖 |
-| 設計師 | Illustrator 圖層最底部 | 拖入官方圖檔，隱藏、鎖定，保留 Background |
+| 設計師 | Illustrator Layers 最底部 | 拖入官方圖檔，Opacity 設為 0%，鎖定，保留 Background |
 | 動畫師 | After Effects 合成最底部 | 匯入 PNG，設 Guide Layer、關閉可見性、鎖定 |
 
 結案率提升、當機率下降、客戶突然只改一版，屬於本專案的信仰設定。程式沒有修復軟體或提高成交率的功能，也沒有蒐集這些成效數據。
@@ -126,7 +126,12 @@ def bless(event, on_build=False, on_dev=False):
 
 ## 設計師：Illustrator
 
-首頁第一張 GIF 就是這個流程：把已授權的官方綠色乖乖置入 Illustrator，拖到 Layers 最底部，關閉可見性並鎖定。手動操作時請使用 `assets/kuai-kuai-official-green.webp`，或用你自己的授權圖檔；不要把護身圖層納入輸出。
+首頁第一張 GIF 就是這個流程：把已授權的官方綠色乖乖置入 Illustrator，讓乖乖保持在畫板上，將它的 Layers 列拖到最底部，再把 Opacity 設為 0%，最後鎖定。這裡不關閉眼睛，也不把圖片拖出畫板放進右側面板；隱藏效果由 Opacity 0% 完成。手動操作時請使用 `assets/kuai-kuai-official-green.webp`，或用你自己的授權圖檔；不要把護身圖層納入輸出。
+
+1. 置入官方綠色圖檔，讓圖片留在原本的畫板位置。
+2. 在 Layers 面板拖曳乖乖圖層列到最底部，眼睛保持開啟。
+3. 在控制列或 Appearance 面板將 Opacity 設為 `0%`。
+4. 鎖定圖層，不要把圖片本身拖進右側面板。
 
 ## 設計師：Photoshop
 

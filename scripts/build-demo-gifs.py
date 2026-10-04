@@ -40,6 +40,21 @@ def fit_package(size: int = 130) -> Image.Image:
     return package
 
 
+def faded_package(package: Image.Image, opacity: int) -> Image.Image:
+    """Return the placed package at Illustrator's current opacity."""
+    opacity = max(0, min(100, opacity))
+    if opacity == 100:
+        return package
+    faded = package.copy()
+    faded.putalpha(faded.getchannel("A").point(lambda value: value * opacity // 100))
+    return faded
+
+
+def lerp(start: int, end: int, amount: float) -> int:
+    amount = max(0.0, min(1.0, amount))
+    return int(round(start + (end - start) * amount))
+
+
 def draw_mouse(draw: ImageDraw.ImageDraw, x: int, y: int, pressed: bool = False) -> None:
     """Draw an actual pointer, not a decorative direction arrow."""
     pointer = [(x, y), (x + 4, y + 30), (x + 12, y + 22),
@@ -55,17 +70,23 @@ def draw_mouse(draw: ImageDraw.ImageDraw, x: int, y: int, pressed: bool = False)
 
 
 def draw_dashed_box(draw: ImageDraw.ImageDraw, box: tuple[int, int, int, int],
-                    colour: str = "#4da3ff", dash: int = 8) -> None:
+                    colour: str = "#2d7fff", dash: int = 8) -> None:
+    """Draw Illustrator's blue bounding box and eight transform handles."""
     x1, y1, x2, y2 = box
-    for x in range(x1, x2, dash * 2):
-        draw.line((x, y1, min(x + dash, x2), y1), fill=colour, width=2)
-        draw.line((x, y2, min(x + dash, x2), y2), fill=colour, width=2)
-    for y in range(y1, y2, dash * 2):
-        draw.line((x1, y, x1, min(y + dash, y2)), fill=colour, width=2)
-        draw.line((x2, y, x2, min(y + dash, y2)), fill=colour, width=2)
+    draw.rectangle((x1, y1, x2, y2), outline=colour, width=1)
+    handle_size = 6
+    points = [
+        (x1, y1), ((x1 + x2) // 2, y1), (x2, y1),
+        (x1, (y1 + y2) // 2), (x2, (y1 + y2) // 2),
+        (x1, y2), ((x1 + x2) // 2, y2), (x2, y2),
+    ]
+    for x, y in points:
+        draw.rectangle((x - handle_size // 2, y - handle_size // 2,
+                        x + handle_size // 2, y + handle_size // 2),
+                       fill="#ffffff", outline=colour, width=1)
 
 
-def illustrator_shell() -> tuple[Image.Image, ImageDraw.ImageDraw]:
+def illustrator_shell(opacity: int = 100, selected: bool = False) -> tuple[Image.Image, ImageDraw.ImageDraw]:
     im = Image.new("RGB", (W, H), "#252525")
     draw = ImageDraw.Draw(im)
 
@@ -88,7 +109,7 @@ def illustrator_shell() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.rectangle((0, 61, W, 101), fill="#3a3a3a")
     text(draw, (15, 74), "Selection", 11, "#a9a9a9")
     rounded(draw, (82, 68, 174, 93), 3, "#262626", "#5c5c5c")
-    text(draw, (92, 74), "No Selection", 11, "#e0e0e0")
+    text(draw, (92, 74), "Image" if selected else "No Selection", 11, "#e0e0e0")
     for x, label, value in [(205, "X:", "—"), (286, "Y:", "—"), (367, "W:", "—"),
                             (448, "H:", "—")]:
         text(draw, (x, 75), label, 11, "#a9a9a9")
@@ -101,6 +122,9 @@ def illustrator_shell() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     text(draw, (652, 73), "↕", 12, "#e0e0e0")
     text(draw, (679, 73), "⌗", 12, "#e0e0e0")
     text(draw, (706, 73), "⊕", 12, "#e0e0e0")
+    text(draw, (752, 75), "Opacity:", 11, "#a9a9a9")
+    rounded(draw, (811, 68, 878, 93), 3, "#262626", "#5c5c5c")
+    text(draw, (824, 75), f"{opacity}%" if selected else "—", 11, "#f0f0f0")
 
     # Workspace, toolbar and document canvas.
     draw.rectangle((0, 101, W, 686), fill="#2c2c2c")
@@ -121,15 +145,24 @@ def illustrator_shell() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     draw.rectangle((150, 155, 895, 635), fill="#1f1f1f", outline="#575757")
     draw.rectangle((180, 180, 865, 610), fill="#ffffff", outline="#b7b7b7")
     text(draw, (201, 195), "ARTBOARD 01", 10, "#b6b6b6")
-    rounded(draw, (333, 300, 713, 478), 3, "#f3f0e8", "#d1c5a3", width=2)
-    text(draw, (410, 350), "CLIENT ARTWORK", 20, "#5e6b72", bold=True)
-    text(draw, (427, 381), "selected document", 12, "#929292")
-    draw.line((368, 431, 678, 431), fill="#e0d6bd", width=2)
+    # A real-looking vector document sits on the artboard; the talisman is
+    # placed on top of it and later disappears through Opacity, not by moving
+    # the artwork into the dock.
+    rounded(draw, (306, 258, 736, 544), 2, "#f3efe5", "#d1c5a3", width=1)
+    draw.rectangle((306, 258, 736, 319), fill="#202c3b")
+    draw.ellipse((520, 305, 690, 475), fill="#e86f51")
+    draw.ellipse((382, 382, 555, 555), fill="#f3c95f")
+    draw.rectangle((575, 345, 682, 455), fill="#f7f4ec", outline="#202c3b", width=2)
+    text(draw, (328, 278), "STUDIO FORM", 11, "#f7f4ec", bold=True)
+    text(draw, (329, 475), "OBJECT / IMAGE / TYPE", 11, "#202c3b", bold=True)
+    text(draw, (329, 495), "kuai-kuai.ai", 10, "#68717b")
+    draw.line((329, 518, 692, 518), fill="#202c3b", width=1)
+    draw.line((329, 529, 500, 529), fill="#b4a991", width=1)
 
     # Right-side dock and Layers panel.
     draw.rectangle((1000, 101, W, 686), fill="#363636")
     draw.rectangle((1010, 101, W, 136), fill="#2f2f2f")
-    for x, label in [(1020, "Layers"), (1078, "Properties"), (1150, "Libraries")]:
+    for x, label in [(1020, "Properties"), (1108, "Layers"), (1170, "Libraries")]:
         text(draw, (x, 112), label, 11, "#e5e5e5" if label == "Layers" else "#999999",
              bold=label == "Layers")
     draw.rectangle((1010, 136, W, 176), fill="#404040")
@@ -156,62 +189,155 @@ def draw_lock(draw: ImageDraw.ImageDraw, x: int, y: int, locked: bool) -> None:
         draw.rectangle((x + 8, y + 12, x + 11, y + 17), fill="#4a4a4a")
 
 
-def draw_layers(draw: ImageDraw.ImageDraw, active: bool, final: bool) -> tuple[int, int]:
-    rows = ["TEXT", "ARTWORK", "BACKGROUND", "KUAI_KUAI_TALISMAN"]
-    y0 = 192
-    row_h = 46
-    target_y = y0 + 3 * row_h
-    for index, name in enumerate(rows):
-        y = y0 + index * row_h
-        selected = active and index == 3
-        draw.rectangle((1010, y, 1279, y + row_h), fill="#454545" if selected else "#383838")
-        text(draw, (1020, y + 15), "▸" if index < 3 else "", 11, "#bbbbbb")
-        draw_eye(draw, 1044, y + 10, visible=index < 3)
-        draw_lock(draw, 1071, y + 10, locked=final and index == 3)
-        text(draw, (1100, y + 14), name, 11, "#ffffff" if selected else "#d4d4d4",
+TALISMAN_LAYER = "KUAI_KUAI_TALISMAN"
+ARTWORK_LAYERS = ("TEXT", "ARTWORK", "BACKGROUND")
+
+
+def illustrator_state(progress: float, final: bool = False) -> dict[str, int | bool | str]:
+    """Return the Illustrator actions represented by a demo frame.
+
+    The package never travels into the right dock. The selected layer row moves
+    to the bottom, then the selected object's Opacity is reduced to 0%.
+    """
+    p = max(0.0, min(1.0, progress))
+    reorder = max(0.0, min(1.0, (p - 0.32) / 0.36))
+    opacity_fade = max(0.0, min(1.0, (p - 0.70) / 0.20))
+    if final:
+        reorder = 1.0
+        opacity_fade = 1.0
+    opacity = int(round(100 * (1.0 - opacity_fade)))
+    if final:
+        opacity = 0
+    phase = "place"
+    if p >= 0.24:
+        phase = "drag-layer"
+    if p >= 0.70:
+        phase = "set-opacity"
+    if final:
+        phase = "complete"
+    return {
+        "reorder": reorder,
+        "opacity": opacity,
+        "placed": final or p >= 0.08,
+        "selected": final or p >= 0.14,
+        "locked": final or p >= 0.94,
+        "layer_dragging": not final and 0.32 <= p < 0.70,
+        "opacity_adjusting": not final and 0.70 <= p < 0.92,
+        "package_alpha": opacity,
+        "phase": phase,
+    }
+
+
+def draw_layers(draw: ImageDraw.ImageDraw, state: dict[str, int | bool | str]) -> dict[str, int]:
+    """Draw a Layers panel whose row order changes, not the package position."""
+    y0 = 184
+    row_h = 40
+    reorder = float(state["reorder"])
+    talisman_y = y0
+
+    def render_row(name: str, y: int, selected: bool = False, dragged: bool = False) -> None:
+        is_talisman = name == TALISMAN_LAYER
+        draw.rectangle((1010, y, 1279, y + row_h), fill="#4b4b4b" if selected else "#383838")
+        if dragged:
+            draw.rectangle((1010, y, 1279, y + row_h), outline="#4da3ff", width=2)
+        text(draw, (1020, y + 12), "▸" if not is_talisman else "", 11, "#bbbbbb")
+        # The eye stays on. Opacity 0% is the deliberate Illustrator hiding step.
+        draw_eye(draw, 1044, y + 7, visible=True)
+        draw_lock(draw, 1071, y + 6, locked=is_talisman and bool(state["locked"]))
+        text(draw, (1100, y + 12), name, 10, "#ffffff" if selected else "#d4d4d4",
              bold=selected)
-        draw.ellipse((1243, y + 15, 1254, y + 26), outline="#a7a7a7")
-    text(draw, (1018, 394), "▾  Appearance", 11, "#bcbcbc")
-    draw.line((1010, 416, 1280, 416), fill="#505050")
-    text(draw, (1018, 430), "▾  Graphic Styles", 11, "#bcbcbc")
-    return 1130, target_y + row_h // 2
+        if selected:
+            draw.ellipse((1243, y + 13, 1254, y + 24), outline="#ff9d00", width=2)
+        else:
+            draw.ellipse((1244, y + 14, 1253, y + 23), outline="#a7a7a7")
+
+    if bool(state["layer_dragging"]):
+        # During a real Layers-panel drag, the selected row floats over the
+        # other rows while the blue insertion line marks the final position.
+        for index, name in enumerate(ARTWORK_LAYERS):
+            render_row(name, y0 + index * row_h)
+        talisman_y = int(round(y0 + reorder * 3 * row_h))
+        render_row(TALISMAN_LAYER, talisman_y, selected=True, dragged=True)
+        drop_y = y0 + 3 * row_h
+        draw.line((1013, drop_y - 4, 1276, drop_y - 4), fill="#4da3ff", width=2)
+    else:
+        rows = (TALISMAN_LAYER,) + ARTWORK_LAYERS if reorder < 1.0 else ARTWORK_LAYERS + (TALISMAN_LAYER,)
+        talisman_y = y0 + (3 if reorder >= 1.0 else 0) * row_h
+        for index, name in enumerate(rows):
+            render_row(name, y0 + index * row_h,
+                       selected=name == TALISMAN_LAYER and bool(state["selected"]))
+
+    text(draw, (1018, 352), "▾  Appearance", 11, "#bcbcbc")
+    draw.line((1010, 371, 1280, 371), fill="#505050")
+    text(draw, (1020, 387), "Opacity", 10, "#bdbdbd")
+    rounded(draw, (1090, 379, 1180, 402), 2, "#262626", "#656565")
+    text(draw, (1102, 385), f"{int(state['opacity'])}%", 10, "#f0f0f0")
+    text(draw, (1190, 386), "↕", 11, "#9e9e9e")
+    text(draw, (1018, 428), "▾  Transparency", 11, "#bcbcbc")
+
+    return {
+        "row_x": 1125,
+        "talisman_y": talisman_y + row_h // 2,
+        "top_talisman_y": y0 + row_h // 2,
+        "bottom_talisman_y": y0 + 3 * row_h + row_h // 2,
+        "opacity_x": 842,
+        "opacity_y": 80,
+    }
 
 
 def illustrator_frame(progress: float, final: bool = False) -> Image.Image:
-    im, draw = illustrator_shell()
-    target_x, target_y = draw_layers(draw, active=progress > 0.76 or final, final=final)
+    state = illustrator_state(progress, final=final)
+    im, draw = illustrator_shell(opacity=int(state["opacity"]), selected=bool(state["selected"]))
+    layer = draw_layers(draw, state)
     source_x, source_y = 520, 389
     package = fit_package(136)
     package_w, package_h = package.size
-    start_x, start_y = source_x - package_w // 2, source_y - package_h // 2
+    object_x, object_y = source_x - package_w // 2, source_y - package_h // 2
 
-    if final:
-        text(draw, (73, 656), "Object hidden and locked in the bottom layer", 12, "#6ed19d", bold=True)
-        draw_mouse(draw, target_x + 18, target_y - 2)
-        return im
+    if bool(state["placed"]) and int(state["package_alpha"]) > 0:
+        visible_package = faded_package(package, int(state["package_alpha"]))
+        im.paste(visible_package, (object_x, object_y), visible_package)
+        if bool(state["selected"]):
+            draw_dashed_box(draw, (object_x - 7, object_y - 7,
+                                   object_x + package_w + 7, object_y + package_h + 7))
 
-    if progress < 0.22:
-        cursor_x = int(730 - (730 - source_x) * (progress / 0.22))
-        cursor_y = int(230 + (source_y - 230) * (progress / 0.22))
-        object_x, object_y = start_x, start_y
+    p = max(0.0, min(1.0, progress))
+    if p < 0.14:
+        amount = p / 0.14
+        cursor_x = lerp(730, source_x, amount)
+        cursor_y = lerp(230, source_y, amount)
+        pressed = False
+    elif p < 0.26:
+        cursor_x, cursor_y, pressed = source_x, source_y, True
+    elif p < 0.70:
+        amount = (p - 0.26) / 0.44
+        cursor_x = lerp(source_x, layer["row_x"], amount)
+        cursor_y = lerp(source_y, layer["top_talisman_y"], amount)
+        if p >= 0.32:
+            cursor_y = layer["talisman_y"]
+        pressed = True
+    elif p < 0.82:
+        amount = (p - 0.70) / 0.12
+        cursor_x = lerp(layer["row_x"], layer["opacity_x"], amount)
+        cursor_y = lerp(layer["talisman_y"], layer["opacity_y"], amount)
         pressed = False
     else:
-        drag_progress = min(1.0, (progress - 0.22) / 0.70)
-        cursor_x = int(source_x + (target_x - source_x) * drag_progress)
-        cursor_y = int(source_y + (target_y - source_y) * drag_progress)
-        object_x = cursor_x - package_w // 2 + 10
-        object_y = cursor_y - package_h // 2 + 10
-        pressed = True
+        cursor_x, cursor_y, pressed = layer["opacity_x"], layer["opacity_y"], False
 
-    im.paste(package, (object_x, object_y), package)
-    draw_dashed_box(draw, (object_x - 7, object_y - 7, object_x + package_w + 7,
-                           object_y + package_h + 7))
     draw_mouse(draw, cursor_x, cursor_y, pressed=pressed)
-    if pressed:
-        text(draw, (72, 656), "Click and hold — drag the placed object to the bottom layer", 12,
+    if final:
+        text(draw, (73, 656), "Bottom layer  ·  Opacity 0%  ·  eye on  ·  locked", 12,
+             "#6ed19d", bold=True)
+    elif p < 0.20:
+        text(draw, (73, 656), "Place the official green package on the artboard", 12, "#d0d0d0")
+    elif p < 0.32:
+        text(draw, (73, 656), "Select the placed image — keep it on the artboard", 12,
+             "#80bfff", bold=True)
+    elif p < 0.70:
+        text(draw, (73, 656), "Drag the selected layer row to the bottom of Layers", 12,
              "#80bfff", bold=True)
     else:
-        text(draw, (72, 656), "Place the official green package on the artboard", 12, "#d0d0d0")
+        text(draw, (73, 656), "Set Opacity to 0% — keep the eye on", 12, "#dcdcaa", bold=True)
     return im
 
 
