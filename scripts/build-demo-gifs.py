@@ -284,22 +284,23 @@ def illustrator_state(progress: float, final: bool = False) -> dict[str, int | f
     to the bottom, then the selected object's Opacity is reduced to 0%.
     """
     p = max(0.0, min(1.0, progress))
-    reorder = max(0.0, min(1.0, (p - 0.36) / 0.25))
-    # The field is edited first; the placed object fades only after the
-    # entered value is committed, so the UI never shows contradictory state.
-    opacity_fade = max(0.0, min(1.0, (p - 0.84) / 0.07))
+    reorder = max(0.0, min(1.0, (p - 0.34) / 0.22))
+    # Opacity is adjusted as a continuous action.  The numeric control and
+    # the placed image change together, so the viewer can read 100% → 0%
+    # instead of seeing an instant value swap.
+    opacity_fade = max(0.0, min(1.0, (p - 0.70) / 0.20))
     if final:
         reorder = 1.0
         opacity_fade = 1.0
-    opacity = int(round(100 * (1.0 - opacity_fade)))
+    opacity = int(round(100 * (1.0 - smoothstep(opacity_fade))))
     if final:
         opacity = 0
     phase = "place"
     if p >= 0.22:
         phase = "drag-layer"
-    if p >= 0.67:
+    if p >= 0.62:
         phase = "set-opacity"
-    if p >= 0.94:
+    if p >= 0.90:
         phase = "lock-layer"
     if final:
         phase = "complete"
@@ -309,12 +310,12 @@ def illustrator_state(progress: float, final: bool = False) -> dict[str, int | f
         "placed": final or p >= 0.06,
         "selected": final or p >= 0.13,
         "locked": final or p >= 0.98,
-        "layer_dragging": not final and 0.36 <= p < 0.61,
-        "drop_feedback": not final and 0.61 <= p < 0.67,
-        "opacity_adjusting": not final and 0.76 <= p < 0.87,
-        "opacity_focus": not final and 0.76 <= p < 0.87,
-        "opacity_entry": final or p >= 0.80,
-        "lock_adjusting": not final and 0.94 <= p < 0.99,
+        "layer_dragging": not final and 0.34 <= p < 0.56,
+        "drop_feedback": not final and 0.56 <= p < 0.62,
+        "opacity_adjusting": not final and 0.70 <= p < 0.90,
+        "opacity_focus": not final and 0.68 <= p < 0.90,
+        "opacity_entry": final or p >= 0.70,
+        "lock_adjusting": not final and 0.95 <= p < 0.99,
         "package_alpha": opacity,
         "phase": phase,
     }
@@ -380,6 +381,10 @@ def draw_layers(draw: ImageDraw.ImageDraw, state: dict[str, int | bool | str]) -
         for index, name in enumerate(rows):
             render_row(name, y0 + index * row_h,
                        selected=name == TALISMAN_LAYER and bool(state["selected"]))
+        if bool(state["drop_feedback"]):
+            drop_y = y0 + 3 * row_h
+            draw.line((panel_x + 4, drop_y - 4, panel_right - 4, drop_y - 4),
+                      fill="#77a9d6", width=2)
 
     text(draw, (922, 397), "Appearance", 12, "#bcbcbc")
     draw.line((panel_x, 416, 1280, 416), fill="#505050")
@@ -387,9 +392,10 @@ def draw_layers(draw: ImageDraw.ImageDraw, state: dict[str, int | bool | str]) -
     field_outline = "#73a8d6" if bool(state["opacity_focus"]) else "#777777"
     rounded(draw, (1018, 426, 1180, 462), 3, "#262626", field_outline,
             width=2 if bool(state["opacity_focus"]) else 1)
-    value = "0%" if bool(state["opacity_entry"]) else f"{int(state['opacity'])}%"
+    value = f"{int(state['opacity'])}%"
     if bool(state["opacity_focus"]):
-        draw.rectangle((1038, 432, 1063, 455), fill="#40617d")
+        highlight_width = 10 + len(value) * 8
+        draw.rectangle((1038, 432, 1038 + highlight_width, 455), fill="#40617d")
     text(draw, (1040, 435), value, 13, "#f0f0f0",
          bold=bool(state["opacity_adjusting"]))
     draw.line((1193, 434, 1193, 454), fill="#9e9e9e", width=1)
@@ -412,6 +418,7 @@ def draw_layers(draw: ImageDraw.ImageDraw, state: dict[str, int | bool | str]) -
         "bottom_talisman_y": y0 + 3 * row_h + row_h // 2,
         "opacity_x": 1098,
         "opacity_y": 444,
+        "opacity_drag_end_x": 1040,
         "lock_x": 971,
         "lock_y": y0 + 3 * row_h + row_h // 2,
     }
@@ -450,32 +457,30 @@ def illustrator_frame(progress: float, final: bool = False) -> Image.Image:
         cursor_y = lerp(source_y, layer["top_talisman_y"], amount)
         pressed = False
         click_strength = 0.0
-    elif p < 0.61:
+    elif p < 0.56:
         amount = smoothstep((p - 0.36) / 0.25)
         cursor_x = layer["row_x"]
         cursor_y = layer["talisman_y"]
         pressed = True
         click_strength = 1.0 - abs(amount - 0.5) * 0.18
-    elif p < 0.67:
+    elif p < 0.62:
         cursor_x, cursor_y = layer["row_x"], layer["bottom_talisman_y"]
-        pressed = p < 0.635
+        pressed = p < 0.585
         click_strength = 1.0
-    elif p < 0.76:
-        amount = ease_out_quart((p - 0.67) / 0.09)
+    elif p < 0.68:
+        amount = ease_out_quart((p - 0.62) / 0.06)
         cursor_x = lerp(layer["row_x"], layer["opacity_x"], amount)
         cursor_y = lerp(layer["bottom_talisman_y"], layer["opacity_y"], amount)
         pressed = False
         click_strength = 0.0
-    elif p < 0.81:
-        cursor_x, cursor_y = layer["opacity_x"], layer["opacity_y"]
+    elif p < 0.90:
+        amount = smoothstep((p - 0.68) / 0.22)
+        cursor_x = lerp(layer["opacity_x"], layer["opacity_drag_end_x"], amount)
+        cursor_y = layer["opacity_y"]
         pressed = True
-        click_strength = smoothstep((p - 0.76) / 0.05)
-    elif p < 0.87:
-        cursor_x, cursor_y = layer["opacity_x"], layer["opacity_y"]
-        pressed = False
-        click_strength = 0.0
-    elif p < 0.94:
-        amount = smoothstep((p - 0.87) / 0.07)
+        click_strength = 1.0
+    elif p < 0.95:
+        amount = smoothstep((p - 0.90) / 0.05)
         cursor_x = lerp(layer["opacity_x"], layer["lock_x"], amount)
         cursor_y = lerp(layer["opacity_y"], layer["lock_y"], amount)
         pressed = False
@@ -499,19 +504,19 @@ def illustrator_frame(progress: float, final: bool = False) -> Image.Image:
     elif p < 0.36:
         text(draw, (73, 661), "3  Follow the selected row in Layers", 13,
              "#80bfff", bold=True)
-    elif p < 0.61:
+    elif p < 0.56:
         text(draw, (73, 661), "4  Hold and drag the layer row to the bottom", 13,
              "#80bfff", bold=True)
-    elif p < 0.67:
+    elif p < 0.62:
         text(draw, (73, 661), "5  Release at the bottom; the package stays on the artboard", 13,
              "#d0d0d0")
-    elif p < 0.78:
-        text(draw, (73, 661), "6  Select Opacity and enter 0%", 13,
+    elif p < 0.68:
+        text(draw, (73, 661), "6  Select Opacity", 13,
              "#dcdcaa", bold=True)
-    elif p < 0.87:
-        text(draw, (73, 661), "6  Enter 0% — the eye stays on", 13,
+    elif p < 0.90:
+        text(draw, (73, 661), "6  Drag Opacity 100% → 0% — keep the eye on", 13,
              "#dcdcaa", bold=True)
-    elif p < 0.94:
+    elif p < 0.95:
         text(draw, (73, 661), "7  Keep the eye on; move to the lock column", 13,
              "#d0d0d0")
     else:
@@ -686,6 +691,7 @@ def save_demo(
     maker,
     motion_count: int = 19,
     motion_duration: int = 90,
+    final_duration: int = 1200,
 ) -> None:
     # More hold frames make the operation readable on GitHub while preserving
     # the pointer movement and the row-by-row code rendering.
@@ -696,14 +702,14 @@ def save_demo(
     png = DOCS / f"{name}.png"
     frames[-1].save(png, optimize=True)
     frames[0].save(gif, save_all=True, append_images=frames[1:],
-                   duration=[motion_duration] * len(motion) + [170] * 8 + [1200],
+                   duration=[motion_duration] * len(motion) + [motion_duration] * 8 + [final_duration],
                    loop=0, optimize=False)
 
 
 def main() -> None:
     DOCS.mkdir(parents=True, exist_ok=True)
     save_demo("demo-illustrator-kuai-kuai", illustrator_frame,
-              motion_count=31, motion_duration=105)
+              motion_count=45, motion_duration=145, final_duration=2400)
     save_demo("demo-code-kuai-kuai", code_frame)
     print("created realistic Illustrator and code-drawn demos")
 
