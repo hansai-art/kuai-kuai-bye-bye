@@ -104,21 +104,22 @@ python3 skills/kuai-kuai-bye-bye/scripts/kuai.py uninstall --project /path/to/pr
 
 ## 工程師：直接用程式碼輸出乖乖
 
-首頁第二張 GIF 參考 [vite-plugin-kuaikuai](https://github.com/unickhow/vite-plugin-kuaikuai) 的做法：不是把 PNG 塞進程式碼，也不是先產生一個圖片檔，而是把乖乖圖形寫成多行字元常數，在 `build` 或 `dev` 事件發生時用 ANSI 綠色輸出。這樣最簡單，沒有圖片資產，也不需要繪圖套件。
+首頁第二張 GIF 直接參考 [vite-plugin-kuaikuai](https://github.com/unickhow/vite-plugin-kuaikuai) 的做法：不是把 PNG 塞進程式碼，也不是先產生一個圖片檔，而是把包含包裝、五官、手腳與明暗網點的乖乖圖形寫成多行 `█▓▒░` 字元常數，在 `build` 或 `dev` 事件發生時用 ANSI 綠色輸出。這樣最簡單，沒有圖片資產，也不需要繪圖套件。
 
 ```python
-KUAI_KUAI = r"""
-             ███████████
-         ███████████████████
-      █████████████████████████
-    █████████████████████████████
-             ...
-"""
+ASCII_ART = r"""
+                               ███████████
+                           ████████████████████
+                        ████████████████████████████████████▓
+                      ██████████████████████████████▓▒░░░▓▓▓██
+                         ...（完整字元圖見 scripts/code-kuai-kuai.py）
+        ▓▓▓▓██▓▓▓▓▓    ▓▓                       ▓▓▓▓▓█▓▓▓▓▓
+""".strip()
 
 def bless(event, on_build=False, on_dev=False):
     if event == "build" and not on_build:
-        return
-    print("\\033[32m" + KUAI_KUAI + "\\033[0m")
+        return ""
+    print("\033[32m" + ASCII_ART + "\033[0m")
 ```
 
 `code-kuai-kuai.py` 預設只在明確指定事件時輸出。`--event build --on-build` 對應建置完成，`--event dev --on-dev` 對應開發伺服器啟動，兩個 hook 預設關閉，不會偷偷污染一般終端輸出。

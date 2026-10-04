@@ -150,6 +150,9 @@ class RitualTest(unittest.TestCase):
         output = code_kuai_kuai.bless("build", on_build=True, color=False)
         self.assertIn("[kuai-kuai] build", output)
         self.assertIn("████", output)
+        self.assertIn("▓▒░", output)
+        self.assertGreaterEqual(len(code_kuai_kuai.ASCII_ART.splitlines()), 35)
+        self.assertGreater(max(map(len, code_kuai_kuai.ASCII_ART.splitlines())), 70)
         self.assertNotIn("\\033", output)
         self.assertIn("ASCII_ART", code_kuai_kuai.__dict__)
 

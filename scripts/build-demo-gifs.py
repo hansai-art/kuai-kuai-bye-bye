@@ -215,31 +215,55 @@ def illustrator_frame(progress: float, final: bool = False) -> Image.Image:
     return im
 
 
-# The code demo follows the event-triggered ASCII-art approach in the
-# referenced Vite plug-in. It never reads PACKAGE.
+# The code demo follows the event-triggered, source-embedded ASCII-art approach
+# in the referenced Vite plug-in. It never reads PACKAGE.
 ASCII_ART = (
-    "             ███████████",
-    "         ███████████████████",
-    "      █████████████████████████",
-    "    █████████████████████████████",
-    "   ███████████████████████████████",
-    "  █████████████████████████████████",
-    " ███████████████████████████████████",
-    " ████████     █████████     ████████",
-    " ███████      █████████      ███████",
-    " ███████████████████████████████████",
-    "  █████████████████████████████████",
-    "   ███████████████████████████████",
-    "     ███████████████████████████",
-    "         ███████████████████",
-    "             ███████████",
+    "                               ███████████",
+    "                           ████████████████████",
+    "                        ████████████████████████████████████▓",
+    "                      ██████████████████████████████▓▒░░░▓▓▓██",
+    "                    ██████████████████████████████████▓▓▓▓▓▓▓▓▓",
+    "        ████       ████████████████████████████████████▓▓▓▓▓▓▓█",
+    "     ████████     ██████████████████████████████████████▓▓█▓▓▓█▓",
+    "  ████████████   ██████████████████████████████████████████████▓",
+    "  █████████████████████████████████████████████████████████████▓",
+    "  ████████████████▓▒░░▒▓███▓▒░░░▒▒▒▓██████████████████████ ▓██▓",
+    "   ██████████████▓░░░░░▒██▓▒███▒░░░░░░▒████████████████████",
+    "    █████████████▒░░▒▒░▒█▓░░▒░░░░░░░░▓▓▒░▒█████████████████",
+    "    █████████████▓░░░░▒▓▓░░▓█▓░░░░░░░░▓██░░▒███████████████",
+    "     ████████████▓▒▒▒░░░░░░▒▓░░░░░░▒██▒░░░░░███████████████",
+    "   ▒░░▒███████████▓░░░░░▓█░░░░░░▒░░▓█▓░░░░░█████████████████",
+    " ░░░░░░░▓█████████▒░░░░▒███▒░░░░░░░░░░░░░░██▓▒░░░░▒█████████",
+    " ▒░░░░░░░▓██▓░░▒▓█▒░░░░██▓░░░▒▒▒▒▒▒▓█▓▒░░░░▒░░░▒░░░▓█████████      ███",
+    "░░░ ░░░░░░░░░░░░▓█▒░░░░███▒░▒▓░░░▓███▒░░░░░░░▒▒▒░░▒▓███████████████████",
+    " ░░░ ░░░░    ░░▓██▓░░░░▒▒▒▒▓▓█▓▒▒▓██▒░░░░░░░░░░░░▒██████████████████████",
+    "    ░░   ░░  ░▒████▓░░░▒▒▒▒▒▒▒▒▒▒▓▓▒░░░░░░▒▓▓▓▓█████████████████████████",
+    "    ▒░░░░░ ░░░▓▓▓███▓░░░▒▒▒▒▒▒▒▒▒▒░░░░░░░▓████▓▓▓████████████████████████",
+    "      ▒░░░░░▒▓▓▓▓▓▓▓█▓▒░░░▒▒▒▒▒▒░░░░░░░▒▓████▓░░░▒██████████████████████",
+    "       ██▓▒▓▓▓▓▓▓▓▓▓▓░░░▒▒░░░░░░░░░░▒▓███████▒░ ░▒████▓▒░▒▓██████████",
+    "       ███▓▓▓▓▓▓▓▓▓▒░░░▒▒░░▓▒▒▒▒▒▒▒▓▓▓██████▓░  ░░░░░░░░░░░▓██████",
+    "         ▓█████▓▓█▓░░░░░▓▒▒▒░░░░░▒▓▓▓▓▓▓▓▓▓▓░░░░░░░ ░░░░░░░▒▓",
+    "                  █▓▓▓▓▓▓▓▓▓░░░░░░▓▓▓▓▓▓▓▓▓▓░░ ░░░░░ ░░░░░▒░",
+    "                  █▓▓▓▓▓▓▓▓█▓▒░░▒▓▓█▓▓▓▓▓▓▓▓▒░░░░░ ░░░░░░▒░",
+    "                 ██▓▓▓▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓██▓▓▓▓█▓██▒▒▒░░",
+    "                 █▓▓▓▓▓▓▓▓▓█▓▓▓▓▓▓▓▓▓▓▓▓▓█████",
+    "                 ██▓▓▓▓▓█████▓▓▓▓▓▓▓▓██▓",
+    "                 ▓▓█▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓█",
+    "                   ▓▓▓▓▓▓▓▓▓▓█▓▓▓▓▓▓▓▓▓▓█",
+    "                    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓",
+    "          ▓▓▓▓▓▓▓    █▓▓▓▓██▓   ▓█▓▓▓▓▓▓▓▓▓     ▓▓▓▓▓▓▓▓",
+    "       ▓▓▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▓▓      ▓▓▓▓▓▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▓▓",
+    "     ▓▓▒▒▒▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓         ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▒▒▒▒▓▓",
+    "   ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓         ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓",
+    "    ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓          ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓",
+    "        ▓▓▓▓██▓▓▓▓▓    ▓▓                       ▓▓▓▓▓█▓▓▓▓▓",
 )
 
 
 def draw_ascii_preview(draw: ImageDraw.ImageDraw, x: int, y: int, visible: int | None = None) -> None:
     lines = ASCII_ART if visible is None else ASCII_ART[:visible]
     for row, line in enumerate(lines):
-        text(draw, (x, y + row * 15), line, 11, "#42c77a", bold=True, mono=True)
+        text(draw, (x, y + row * 7), line, 6, "#55c93d", bold=True, mono=True)
 
 
 def code_shell() -> tuple[Image.Image, ImageDraw.ImageDraw]:
@@ -278,8 +302,8 @@ def code_shell() -> tuple[Image.Image, ImageDraw.ImageDraw]:
     text(draw, (384, 72), "×", 12, "#999999")
     text(draw, (438, 72), "kuai_kuai.py", 12, "#9d9d9d")
     text(draw, (527, 72), "×", 12, "#777777")
-    text(draw, (934, 73), "OUTPUT", 11, "#e0e0e0", bold=True)
-    text(draw, (1011, 73), "CODE PREVIEW", 11, "#8d8d8d")
+    text(draw, (934, 73), "TERMINAL", 11, "#e0e0e0", bold=True)
+    text(draw, (1011, 73), "ASCII OUTPUT", 11, "#8d8d8d")
     draw.line((913, 96, W, 96), fill="#424242")
     draw.line((913, 97, 913, 686), fill="#515151", width=2)
     return im, draw
@@ -289,63 +313,51 @@ CODE_LINES = [
     ('GREEN = "\\033[32m"', "#ce9178"),
     ('RESET = "\\033[0m"', "#ce9178"),
     ("", "#d4d4d4"),
-    ('KUAI_KUAI = r"""', "#569cd6"),
-    ("             ███████████", "#42c77a"),
-    ("         ███████████████████", "#42c77a"),
-    ("      █████████████████████████", "#42c77a"),
-    ("    █████████████████████████████", "#42c77a"),
-    ("   ███████████████████████████████", "#42c77a"),
-    ("  █████████████████████████████████", "#42c77a"),
-    (" ███████████████████████████████████", "#42c77a"),
-    (" ████████     █████████     ████████", "#42c77a"),
-    (" ███████      █████████      ███████", "#42c77a"),
-    (" ███████████████████████████████████", "#42c77a"),
-    ("  █████████████████████████████████", "#42c77a"),
-    ("   ███████████████████████████████", "#42c77a"),
-    ("     ███████████████████████████", "#42c77a"),
-    ("         ███████████████████", "#42c77a"),
-    ("             ███████████", "#42c77a"),
+    ('ASCII_ART = r"""', "#569cd6"),
+] + [(line, "#55c93d") for line in ASCII_ART] + [
     ('"""', "#569cd6"),
     ("", "#d4d4d4"),
     ("def bless(event, on_build=False, on_dev=False):", "#569cd6"),
     ('    if event == "build" and not on_build:', "#c586c0"),
     ('        return ""', "#ce9178"),
-    ("    print(GREEN + KUAI_KUAI + RESET)", "#dcdcaa"),
+    ('    if event == "dev" and not on_dev:', "#c586c0"),
+    ('        return ""', "#ce9178"),
+    ("    print(GREEN + ASCII_ART + RESET)", "#dcdcaa"),
 ]
 
 
 def code_frame(progress: float, final: bool = False) -> Image.Image:
     im, draw = code_shell()
-    editor_x, editor_y = 300, 112
-    line_height = 18
+    editor_x, editor_y = 300, 104
+    line_height = 9
     visible = len(CODE_LINES) if final else max(3, min(len(CODE_LINES), int(3 + progress * (len(CODE_LINES) - 3))))
     for index, (line, colour) in enumerate(CODE_LINES[:visible]):
         y = editor_y + index * line_height
-        text(draw, (editor_x, y), f"{index + 1:>2}", 11, "#606a73", mono=True)
-        text(draw, (editor_x + 38, y), line, 12, colour, mono=True)
+        text(draw, (editor_x, y), f"{index + 1:>2}", 8, "#606a73", mono=True)
+        text(draw, (editor_x + 28, y), line, 8, colour, mono=True)
 
     # A blinking caret communicates typing; it replaces the old fake drag arrow.
     if not final:
         last_line = CODE_LINES[visible - 1][0]
-        caret_x = editor_x + 38 + len(last_line) * 7
+        caret_x = editor_x + 28 + len(last_line) * 4.8
         draw.rectangle((caret_x, editor_y + (visible - 1) * line_height, caret_x + 2,
-                        editor_y + (visible - 1) * line_height + 15), fill="#aeafad")
+                        editor_y + (visible - 1) * line_height + 10), fill="#aeafad")
 
     # The preview appears row by row only after the lifecycle hook exists.
-    preview_x, preview_y = 942, 165
+    preview_x, preview_y = 922, 111
     if final:
         draw_ascii_preview(draw, preview_x, preview_y)
-        text(draw, (954, 421), "Printed from source code", 13, "#6ed19d", bold=True)
-        text(draw, (954, 443), "No image asset loaded", 11, "#a6a6a6")
-        text(draw, (954, 466), "ANSI green + build hook", 11, "#a6a6a6")
+        text(draw, (924, 410), "Printed from source code", 12, "#6ed19d", bold=True)
+        text(draw, (924, 431), "No image asset loaded", 10, "#a6a6a6")
+        text(draw, (924, 449), "ANSI green + build hook", 10, "#a6a6a6")
     elif visible > 4:
         rows = min(len(ASCII_ART), visible - 4)
         draw_ascii_preview(draw, preview_x, preview_y, visible=rows)
-        text(draw, (954, 421), "Executing build hook…", 12, "#dcdcaa")
+        text(draw, (924, 410), "Executing build hook…", 11, "#dcdcaa")
     else:
-        text(draw, (954, 207), "Waiting for event…", 13, "#777777")
-        text(draw, (954, 235), "The talisman is stored", 11, "#777777")
-        text(draw, (954, 253), "inside the source code.", 11, "#777777")
+        text(draw, (924, 207), "Waiting for event…", 12, "#777777")
+        text(draw, (924, 235), "The talisman is stored", 10, "#777777")
+        text(draw, (924, 252), "inside the source code.", 10, "#777777")
 
     # Integrated terminal and status bar.
     draw.rectangle((280, 600, 913, 686), fill="#181818")
