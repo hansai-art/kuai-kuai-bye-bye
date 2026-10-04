@@ -40,6 +40,8 @@ python3 "<skill-dir>/scripts/kuai.py" doctor --project "/path/to/project"
 
 預設圖檔為 `assets/kuai-kuai-official-green.webp`，取自乖乖官方網站的「乖乖玉米脆條－奶油椰子」商品頁。使用者若有自己的授權素材，優先用 `init --image` 或 Adobe 腳本選檔，不要把其他網路圖片冒充官方授權素材。
 
+首頁 Illustrator GIF 只是這套規則的示範動畫，不是安裝 Skill 後自動取得的功能。安裝後提供的是操作規則、圖檔與腳本；沒有 Illustrator 的實際操作連線時，只能交付資產與步驟，不能宣稱已自動修改文件或產生 GIF。
+
 - Photoshop：`scripts/photoshop-kuai.jsx` 先讓使用者選擇已獲授權的 PNG、JPG、JPEG 或 WebP，安放在可用的最底部、隱藏並鎖定。底部是 Background 時放在其上方，不轉換原本背景。
 - After Effects：`scripts/after-effects-kuai.jsx` 先讓使用者選擇已獲授權的圖檔，在目前合成底部安放，設成 Guide Layer、關閉可見性並鎖定。保留匯入素材，避免未來重開專案遺失來源。
 - Illustrator：把已獲授權的官方綠色圖檔置入文件，保持在畫板上，將 Layers 列拖到最底部，把 Opacity 設為 0%，眼睛保持開啟並鎖定。不要把圖片拖進右側面板。沒有 Illustrator 的實際連線時，只提供圖檔與操作指引，不宣稱已修改原生文件。
