@@ -168,15 +168,32 @@ class RitualTest(unittest.TestCase):
         self.assertIn("[kuai-kuai] dev", output)
 
     def test_illustrator_moves_layer_then_sets_opacity_zero(self):
-        dragging = build_demo_gifs.illustrator_state(0.55)
+        seconds = build_demo_gifs.ILLUSTRATOR_SECONDS
+        drag_start, drag_end = build_demo_gifs.T_DRAG
+        dragging = build_demo_gifs.illustrator_state((drag_start + drag_end) / 2 / seconds)
+        dropped = build_demo_gifs.illustrator_state(drag_end / seconds + 0.01)
         complete = build_demo_gifs.illustrator_state(1.0, final=True)
         self.assertTrue(dragging["placed"])
         self.assertTrue(dragging["layer_dragging"])
         self.assertEqual(dragging["opacity"], 100)
+        # Opacity only starts falling after the row has reached the bottom.
+        self.assertTrue(dropped["at_bottom"])
+        self.assertEqual(dropped["opacity"], 100)
+        self.assertFalse(dropped["locked"])
         self.assertEqual(complete["reorder"], 1.0)
         self.assertEqual(complete["opacity"], 0)
         self.assertTrue(complete["locked"])
         self.assertEqual(complete["package_alpha"], 0)
+
+    def test_illustrator_renders_at_place_boundary_from_cold_cache(self):
+        try:
+            build_demo_gifs.ui_font("cjk", 12)
+        except SystemExit:
+            self.skipTest("Inter / Noto Sans CJK TC not installed")
+        build_demo_gifs._STATIC.clear()
+        start = build_demo_gifs.T_PLACE[0] / build_demo_gifs.ILLUSTRATOR_SECONDS
+        frame = build_demo_gifs.illustrator_frame(start)
+        self.assertEqual(frame.size, (build_demo_gifs.W, build_demo_gifs.H))
 
 if __name__ == "__main__":
     unittest.main()
