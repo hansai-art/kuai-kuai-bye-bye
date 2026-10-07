@@ -721,15 +721,17 @@ def draw_cursor(im: Image.Image, x: float, y: float, pressed: bool, fade: float)
 def illustrator_frame(progress: float, final: bool = False) -> Image.Image:
     state = illustrator_state(progress, final=final)
     t = state["t"]
+    bag_image()  # also caches the Layers thumbnail, even while the bag is invisible
     im = static_shell().copy()
     back, front = static_artwork()
     # Z-order on the artboard follows the Layers panel: once the row lands at
-    # the bottom, Type and Illustration render on top of the package.
-    im.alpha_composite(back)
+    # the bottom, every other layer (Layout included) renders above the package.
     if state["at_bottom"]:
         paste_bag(im, state)
+        im.alpha_composite(back)
         im.alpha_composite(front)
     else:
+        im.alpha_composite(back)
         im.alpha_composite(front)
         paste_bag(im, state)
     draw_selection(Pen(im), state)

@@ -185,5 +185,15 @@ class RitualTest(unittest.TestCase):
         self.assertTrue(complete["locked"])
         self.assertEqual(complete["package_alpha"], 0)
 
+    def test_illustrator_renders_at_place_boundary_from_cold_cache(self):
+        try:
+            build_demo_gifs.ui_font("cjk", 12)
+        except SystemExit:
+            self.skipTest("Inter / Noto Sans CJK TC not installed")
+        build_demo_gifs._STATIC.clear()
+        start = build_demo_gifs.T_PLACE[0] / build_demo_gifs.ILLUSTRATOR_SECONDS
+        frame = build_demo_gifs.illustrator_frame(start)
+        self.assertEqual(frame.size, (build_demo_gifs.W, build_demo_gifs.H))
+
 if __name__ == "__main__":
     unittest.main()
